@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
+import { THEORY_DATA } from "@/data/theory";
 import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
@@ -14,6 +15,7 @@ function Index() {
   const navigate = useNavigate();
   const [questionCount, setQuestionCount] = useState<number>(30);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [selectedBlockId, setSelectedBlockId] = useState<string>("block1");
   const presetCounts = [5, 10, 20, 30, 40, 50];
 
   useEffect(() => {
@@ -54,10 +56,15 @@ function Index() {
     return [...history].slice(0, 7).reverse();
   }, [history]);
 
+  // Holt die Daten des aktuell ausgewählten Blocks für den Lernbereich
+  const currentBlockTheory = useMemo(() => {
+    return THEORY_DATA[selectedBlockId as keyof typeof THEORY_DATA];
+  }, [selectedBlockId]);
+
   return (
-    <main className="mx-auto max-w-2xl px-5 py-14 sm:py-20 antialiased">
+    <main className="mx-auto max-w-4xl px-5 py-14 sm:py-20 antialiased">
       {/* Edler Header */}
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-medium tracking-wide border border-primary/10">
           <Heart className="h-3 w-3 fill-current" /> Premium Version for You
         </div>
@@ -69,18 +76,64 @@ function Index() {
         </p>
       </div>
 
-      <Tabs defaultValue="portal" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
-        <TabsList className="grid w-full grid-cols-2 p-1.5 bg-secondary/50 border border-border/40 backdrop-blur-sm rounded-2xl h-14 shadow-inner">
+      <Tabs defaultValue="lernen" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
+        <TabsList className="grid w-full grid-cols-3 p-1.5 bg-secondary/50 border border-border/40 backdrop-blur-sm rounded-2xl h-14 shadow-inner">
+          <TabsTrigger value="lernen" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
+            <BookOpen className="h-4 w-4 mr-2 text-primary" /> Lernbereich
+          </TabsTrigger>
           <TabsTrigger value="portal" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
-            <Layers className="h-4 w-4 mr-2 text-primary" /> Lernportal
+            <Layers className="h-4 w-4 mr-2 text-primary" /> Prüfungsportal
           </TabsTrigger>
           <TabsTrigger value="history" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
             <Clock className="h-4 w-4 mr-2 text-primary" /> Historie ({history.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* REITER 1: LERNPORTAL (Jetzt sauber getrennt) */}
-        <TabsContent value="portal" className="mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
+        {/* REITER 1: LERNBEREICH (NEU) */}
+        <TabsContent value="lernen" className="mt-8 focus-visible:outline-none focus-visible:ring-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            
+            {/* Linkes Menü: Liste der Blöcke */}
+            <div className="md:col-span-1 bg-card p-4 rounded-[2rem] border border-border/40 shadow-sm space-y-1 md:sticky md:top-6">
+              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-2 mb-3">
+                Themenübersicht
+              </p>
+              {Object.values(THEORY_DATA).map((block) => (
+                <button
+                  key={block.id}
+                  onClick={() => setSelectedBlockId(block.id)}
+                  className={`w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
+                    selectedBlockId === block.id
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/10 pl-4"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  }`}
+                >
+                  {block.title}
+                </button>
+              ))}
+            </div>
+
+            {/* Rechte Anzeige: Unveränderter Originaltext */}
+            <div className="md:col-span-2 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border/40 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/[0.02] rounded-full blur-2xl pointer-events-none" />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 border border-primary/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-primary mb-4">
+                Originaler Lehrtext
+              </div>
+              <h2 className="text-xl sm:text-2xl font-display font-black tracking-tight text-foreground border-b pb-4 mb-6">
+                {currentBlockTheory?.title}
+              </h2>
+              
+              {/* Rendered den Originaltext unter Behalt aller Zeilenumbrüche, Tabellen und Listenstrukturen */}
+              <div className="text-sm sm:text-base text-foreground/90 whitespace-pre-line font-medium leading-relaxed space-y-4">
+                {currentBlockTheory?.content}
+              </div>
+            </div>
+
+          </div>
+        </TabsContent>
+
+        {/* REITER 2: PRÜFUNGSPORTAL (Vorher Lernportal) */}
+        <TabsContent value="portal" className="mx-auto max-w-2xl mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
           {/* Flexibler Fragenmix */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
@@ -192,8 +245,8 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 2: HISTORIE (Hier sitzt jetzt alles zum Verlauf & Fokus) */}
-        <TabsContent value="history" className="mt-8 space-y-8 focus-visible:outline-none focus-visible:ring-0">
+        {/* REITER 3: HISTORIE */}
+        <TabsContent value="history" className="mx-auto max-w-2xl mt-8 space-y-8 focus-visible:outline-none focus-visible:ring-0">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" /> Bisherige Versuche
@@ -218,8 +271,7 @@ function Index() {
             </div>
           ) : (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-              
-              {/* FEHLER-FOKUS JETZT IM HISTORIE-REITER */}
+              {/* FEHLER-FOKUS */}
               <div className={`rounded-[2.5rem] border p-6 sm:p-8 relative overflow-hidden transition-all duration-300 ${
                 wrongQuestionsCount > 0 
                   ? "bg-gradient-to-br from-red-500/[0.02] via-card to-card border-red-500/20 shadow-xl shadow-red-500/[0.01]" 
