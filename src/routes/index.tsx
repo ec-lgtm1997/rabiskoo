@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
-import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart } from "lucide-react";
+import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
-import { getHistory, loadPastSession, clearHistory, type HistoryEntry } from "@/lib/quizStore";
+import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
@@ -20,11 +20,23 @@ function Index() {
     setHistory(getHistory());
   }, []);
 
+  // Holt die Anzahl der aktuell ungelösten fehlerhaften Fragen
+  const wrongQuestionsCount = useMemo(() => {
+    return getWrongQuestionIds().length;
+  }, [history]);
+
   const handleStartSimulation = (count: number) => {
     navigate({
       to: "/setup",
       search: { count: count.toString() },
     });
+  };
+
+  const handleStartErrorFocus = () => {
+    if (wrongQuestionsCount === 0) return;
+    // Öffnet die Setup-Seite mit einem speziellen Suchparameter oder startet direkt
+    startQuiz({ type: "errors" }, true); // Fehler-Fokus startet im edlen Lernmodus (Feedback an)
+    navigate({ to: "/quiz" });
   };
 
   const handleReviewPastSession = (pastSession: any) => {
@@ -45,10 +57,10 @@ function Index() {
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-14 sm:py-20 antialiased">
-      {/* Edler, zentrierter Header mit dezentem Herz-Icon */}
+      {/* Edler Header */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-medium tracking-wide border border-primary/10">
-          <Heart className="h-3 w-3 fill-current" /> Made with Love
+          <Heart className="h-3 w-3 fill-current" /> Premium Version for You
         </div>
         <h1 className="text-4xl font-display font-extrabold tracking-tight sm:text-5xl bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
           Community Nurse <span className="text-primary font-black">Lernportal</span>
@@ -70,7 +82,57 @@ function Index() {
 
         {/* REITER 1: LERNPORTAL */}
         <TabsContent value="portal" className="mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
+          
+          {/* NEU: SEKTION - DER FEHLER-FOKUS */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
+              <AlertCircle className="h-5 w-5 text-red-500" /> Gezieltes Fokus-Training
+            </h2>
+            
+            <div className={`rounded-[2.5rem] border p-6 sm:p-8 relative overflow-hidden transition-all duration-300 ${
+              wrongQuestionsCount > 0 
+                ? "bg-gradient-to-br from-red-500/[0.02] via-card to-card border-red-500/20 shadow-xl shadow-red-500/[0.01]" 
+                : "bg-card border-border/40 opacity-75 shadow-sm"
+            }`}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <h3 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
+                    Meine Problemzonen trainieren
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium max-w-sm leading-relaxed">
+                    Das System filtert automatisch alle Fragen heraus, die du in der Vergangenheit falsch beantwortet hast, und übt sie mit dir, bis sie sitzen.
+                  </p>
+                </div>
+                <div className={`h-14 w-14 shrink-0 rounded-2xl flex flex-col items-center justify-center font-display transition-transform duration-300 ${
+                  wrongQuestionsCount > 0 
+                    ? "bg-red-50 text-red-600 border border-red-200/50 shadow-sm scale-105 animate-pulse" 
+                    : "bg-secondary text-muted-foreground"
+                }`}>
+                  <span className="text-xl font-black leading-none">{wrongQuestionsCount}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5">Fragen</span>
+                </div>
+              </div>
+
+              {wrongQuestionsCount > 0 ? (
+                <button
+                  onClick={handleStartErrorFocus}
+                  className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 font-bold text-white shadow-xl shadow-red-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-red-500/20 hover:brightness-105 active:translate-y-0"
+                >
+                  Fehler-Fokus starten <ChevronRight className="h-4 w-4 stroke-[3]" />
+                </button>
+              ) : (
+                <div className="mt-6 p-4 rounded-2xl bg-green-50/50 border border-green-100 flex items-center gap-2.5 text-xs font-semibold text-green-700">
+                  <Smile className="h-4 w-4 shrink-0" /> Keine ungelösten Fehler vorhanden! Du machst das fantastisch.
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Prüfungssimulation */}
+          <section className="animate-in slide-in-from-bottom-5 duration-500">
+            <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
+              <GraduationCap className="h-5 w-5 text-primary" /> Flexibler Fragenmix
+            </h2>
             <div className="rounded-[2.5rem] border border-border/40 bg-card p-6 shadow-xl shadow-foreground/[0.02] sm:p-10 relative overflow-hidden backdrop-blur-md">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
               
@@ -79,8 +141,8 @@ function Index() {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-foreground tracking-tight">Individueller Fragenmix</h3>
-                  <p className="text-xs text-muted-foreground font-medium">Stelle dir genau die Menge zusammen, die du gerade schaffst.</p>
+                  <h3 className="font-bold text-lg text-foreground tracking-tight">Zufällige Zusammenstellung</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Bestimme die Fragenanzahl komplett frei über den Regler.</p>
                 </div>
               </div>
 
@@ -135,7 +197,7 @@ function Index() {
                 onClick={() => handleStartSimulation(questionCount)}
                 className="mt-10 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4.5 font-bold text-primary-foreground shadow-xl shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-primary/20 hover:brightness-105 active:translate-y-0 active:scale-[0.99]"
               >
-                Mix starten <ChevronRight className="h-4 w-4 stroke-[3]" />
+                Mix konfigurieren <ChevronRight className="h-4 w-4 stroke-[3]" />
               </button>
             </div>
           </section>
@@ -210,7 +272,6 @@ function Index() {
                 </h3>
                 
                 <div className="relative h-44 border-b border-border/50 pb-2 px-4 flex items-end justify-between gap-1">
-                  {/* Horizontale Linien */}
                   <div className="absolute inset-x-0 top-0 h-full flex flex-col justify-between pointer-events-none pb-2 px-1 opacity-20">
                     <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">100%</div>
                     <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">75%</div>
@@ -218,14 +279,12 @@ function Index() {
                     <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">25%</div>
                   </div>
 
-                  {/* Die eleganten runden Linienbalken */}
                   {chartEntries.map((entry) => {
                     const shortDate = entry.date.split(".")[0] + "." + entry.date.split(".")[1];
                     const isPassed = entry.percentage >= 60;
 
                     return (
                       <div key={entry.id} className="flex flex-1 flex-col items-center group relative h-full justify-end z-10">
-                        {/* Wunderschönes schwebendes Glasmorphismus-Popup */}
                         <div className="absolute bottom-full mb-3.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-1">
                           <div className="bg-background/95 backdrop-blur-md text-[11px] font-semibold rounded-2xl px-3 py-2.5 shadow-xl border border-border/60 text-center space-y-0.5">
                             <span className="font-black text-sm block text-primary">{entry.percentage}%</span>
@@ -238,7 +297,6 @@ function Index() {
                           {entry.percentage}%
                         </span>
 
-                        {/* Schicker vollrunder Pillen-Balken */}
                         <div 
                           style={{ height: `${Math.max(8, entry.percentage)}%` }}
                           className={`w-2 rounded-full transition-all duration-300 ease-out group-hover:scale-y-[1.03] group-hover:w-3 ${
