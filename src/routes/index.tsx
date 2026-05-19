@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
-import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, CheckCircle2, ChevronRight, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, type HistoryEntry } from "@/lib/quizStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -16,7 +18,6 @@ function Index() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const presetCounts = [5, 10, 20, 30, 40, 50];
 
-  // Lädt den Verlauf beim Starten der Seite
   useEffect(() => {
     setHistory(getHistory());
   }, []);
@@ -40,6 +41,18 @@ function Index() {
     }
   };
 
+  // NEU: Bereitet die Daten für das Statistik-Diagramm vor (die letzten 7 Versuche, chronologisch sortiert)
+  const chartData = useMemo(() => {
+    return [...history]
+      .slice(0, 7)
+      .reverse()
+      .map((entry, index) => ({
+        name: `${entry.date}`,
+        Ergebnis: entry.percentage,
+        info: entry.modeText,
+      }));
+  }, [history]);
+
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
       <div className="text-center">
@@ -51,7 +64,6 @@ function Index() {
         </p>
       </div>
 
-      {/* Das Zwei-Reiter-System (Tabs) */}
       <Tabs defaultValue="portal" className="mt-10">
         <TabsList className="grid w-full grid-cols-2 p-1 bg-accent/40 rounded-2xl h-12">
           <TabsTrigger value="portal" className="rounded-xl font-semibold text-sm py-2">
@@ -64,7 +76,6 @@ function Index() {
 
         {/* REITER 1: LERNPORTAL */}
         <TabsContent value="portal" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
-          {/* Prüfungssimulation */}
           <section>
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-primary" /> Prüfungssimulation
@@ -137,7 +148,6 @@ function Index() {
             </div>
           </section>
 
-          {/* Themenblöcke */}
           <section className="mt-12">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
               <Layers className="h-5 w-5 text-primary" /> Themenblöcke lernen
@@ -174,7 +184,7 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 2: HISTORIE / VERLAUF */}
+        {/* REITER 2: HISTORIE MIT NEUER VISUELLER CHART-AUSWERTUNG */}
         <TabsContent value="history" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
@@ -199,49 +209,91 @@ function Index() {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {history.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="rounded-2xl border bg-card p-4 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-primary/30"
-                >
-                  <div className="space-y-1">
-                    <span className="inline-flex items-center text-sm font-bold text-foreground">
-                      {entry.modeText}
-                    </span>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" /> {entry.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {entry.time} Uhr
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <span className="block font-display font-black text-lg leading-tight">
-                        {entry.points} / {entry.maxPoints}
-                      </span>
-                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                        entry.percentage >= 60 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}>
-                        {entry.percentage}%
-                      </span>
-                    </div>
-
-                    {/* Button um die exakte Session noch einmal anzuzeigen */}
-                    <button
-                      onClick={() => handleReviewPastSession(entry.session)}
-                      title="Antworten ansehen"
-                      className="rounded-xl border bg-background p-2 text-muted-foreground hover:text-primary hover:bg-accent transition-all"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
+            <div className="space-y-6">
+              {/* NEU: Das visuelle Statistik-Diagramm */}
+              <div className="rounded-3xl border bg-card p-5 shadow-sm">
+                <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground mb-4">
+                  <BarChart3 className="h-4 w-4 text-primary" /> Fortschritt (Letzte 7 Versuche)
+                </h3>
+                <div className="h-48 w-full">
+                  <ChartContainer config={{ Ergebnis: { label: "Ergebnis (%)", color: "hsl(var(--primary))" } }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="#888888" 
+                          fontSize={11} 
+                          tickLine={false} 
+                          axisLine={false} 
+                        />
+                        <YAxis 
+                          stroke="#888888" 
+                          fontSize={11} 
+                          tickLine={false} 
+                          axisLine={false} 
+                          domain={[0, 100]}
+                          tickFormatter={(value) => `${value}%`}
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Bar 
+                          dataKey="Ergebnis" 
+                          fill="var(--color-Ergebnis)" 
+                          radius={[6, 6, 0, 0]} 
+                          maxBarSize={40}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </div>
-              ))}
+              </div>
+
+              {/* Die Liste der Einträge darunter */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
+                  Alle Einträge
+                </h3>
+                {history.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="rounded-2xl border bg-card p-4 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-primary/30"
+                  >
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center text-sm font-bold text-foreground">
+                        {entry.modeText}
+                      </span>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> {entry.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {entry.time} Uhr
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <span className="block font-display font-black text-lg leading-tight">
+                          {entry.points} / {entry.maxPoints}
+                        </span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          entry.percentage >= 60 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}>
+                          {entry.percentage}%
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => handleReviewPastSession(entry.session)}
+                        title="Antworten ansehen"
+                        className="rounded-xl border bg-background p-2 text-muted-foreground hover:text-primary hover:bg-accent transition-all"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </TabsContent>
