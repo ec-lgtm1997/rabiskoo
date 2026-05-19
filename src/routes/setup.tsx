@@ -1,111 +1,89 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { z } from "zod";
-import { BLOCKS, QUESTIONS } from "@/data/questions";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { startQuiz } from "@/lib/quizStore";
-import { ArrowLeft, Play } from "lucide-react";
-
-const search = z.object({
-  mode: z.enum(["exam", "block"]).default("exam"),
-});
+import { BLOCKS } from "@/data/questions";
+import { ArrowLeft, BookOpen, GraduationCap, Play } from "lucide-react";
+import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/setup")({
-  ssr: false,
-  validateSearch: search,
-  head: () => ({ meta: [{ title: "Modus wählen – Community Nurse" }] }),
-  component: Setup,
+  component: SetupPage,
 });
 
-function Setup() {
-  const { mode } = Route.useSearch();
+function SetupPage() {
   const navigate = useNavigate();
-  const [count, setCount] = useState(Math.min(10, QUESTIONS.length));
+  const search = useSearch({ from: "/setup" }) as { blockId?: string; count?: string };
+  
+  // Neuer Zustand für die Modus-Auswahl (Lernmodus vs. Prüfungsmodus)
+  const [instantReview, setInstantReview] = useState(true);
 
-  const begin = (m: Parameters<typeof startQuiz>[0]) => {
-    startQuiz(m);
+  const blockId = search.blockId;
+  const count = search.count ? parseInt(search.count, 10) : undefined;
+
+  const block = BLOCKS.find((b) => b.id === blockId);
+
+  const handleStart = () => {
+    if (blockId) {
+      startQuiz({ type: "block", blockId }, instantReview);
+    } else if (count) {
+      startQuiz({ type: "count", count }, instantReview);
+    }
     navigate({ to: "/quiz" });
   };
 
   return (
-    <main className="mx-auto max-w-2xl px-5 pb-24 pt-10">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Zurück
-      </Link>
+    <main className="mx-auto max-w-xl px-5 py-12">
+      <button
+        onClick={() => navigate({ to: "/" })}
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Zurück zur Übersicht
+      </button>
 
-      {mode === "exam" ? (
-        <section className="animate-fade-up mt-6 rounded-3xl border bg-card p-6 sm:p-8 shadow-sm">
-          <h1 className="text-3xl font-semibold">Prüfungs-Modus</h1>
-          <p className="mt-2 text-muted-foreground">Wie viele Fragen möchtest du simulieren?</p>
+      <div className="mt-8 rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
+        <h1 className="text-2xl font-display font-bold sm:text-3xl">Prüfungskonfiguration</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {block
+            ? `Du startest den Themenblock: ${block.title}.`
+            : `Du startest einen Zufallsmix mit ${count} Fragen.`}
+        </p>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {[5, 10, 20, 30, QUESTIONS.length].map((n) => {
-              const v = Math.min(n, QUESTIONS.length);
-              const active = count === v;
-              return (
-                <button
-                  key={n}
-                  onClick={() => setCount(v)}
-                  className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
-                    active
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
-                  }`}
-                >
-                  {n === QUESTIONS.length || n > QUESTIONS.length ? `Alle (${QUESTIONS.length})` : n}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-8">
-            <label className="text-sm text-muted-foreground">Eigene Anzahl: {count}</label>
-            <input
-              type="range"
-              min={1}
-              max={QUESTIONS.length}
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              className="mt-2 w-full accent-primary"
+        {/* NEU: Modus-Auswahl Box */}
+        <div className="mt-8 rounded-2xl border bg-accent/20 p-4 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="mode-switch" className="text-base font-semibold flex items-center gap-2">
+                {instantReview ? (
+                  <>
+                    <BookOpen className="h-4 w-4 text-primary" /> Lernmodus aktiv
+                  </>
+                ) : (
+                  <>
+                    <GraduationCap className="h-4 w-4 text-muted-foreground" /> Prüfungsmodus aktiv
+                  </>
+                )}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {instantReview
+                  ? "Zeigt nach jeder Frage sofort die richtige Lösung, die Punkte und eine Info-Box an."
+                  : "Simuliert eine echte Prüfung. Die Auflösung siehst du erst ganz am Ende bei den Ergebnissen."}
+              </p>
+            </div>
+            <Switch
+              id="mode-switch"
+              checked={instantReview}
+              onCheckedChange={setInstantReview}
             />
           </div>
+        </div>
 
-          <button
-            onClick={() => begin({ type: "count", count })}
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
-          >
-            <Play className="h-5 w-5" /> Prüfung starten
-          </button>
-        </section>
-      ) : (
-        <section className="animate-fade-up mt-6">
-          <h1 className="text-3xl font-semibold">Themenblock wählen</h1>
-          <p className="mt-2 text-muted-foreground">Fokussiere dich auf einen der 7 Blöcke.</p>
-
-          <div className="mt-6 grid gap-3">
-            {BLOCKS.map((b, i) => {
-              const n = QUESTIONS.filter((q) => q.block === b.id).length;
-              return (
-                <button
-                  key={b.id}
-                  disabled={n === 0}
-                  onClick={() => begin({ type: "block", blockId: b.id })}
-                  className="group flex items-center gap-4 rounded-2xl border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-display text-lg font-semibold text-primary">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{b.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {n === 0 ? "Bald verfügbar" : `${n} Frage${n === 1 ? "" : "n"}`}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
+        <button
+          onClick={handleStart}
+          className="mt-8 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+        >
+          Jetzt starten <Play className="h-4 w-4 fill-current" />
+        </button>
+      </div>
     </main>
   );
 }
