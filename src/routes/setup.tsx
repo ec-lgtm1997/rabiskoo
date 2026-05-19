@@ -10,6 +10,7 @@ const search = z.object({
 });
 
 export const Route = createFileRoute("/setup")({
+  ssr: false,
   validateSearch: search,
   head: () => ({ meta: [{ title: "Modus wählen – Community Nurse" }] }),
   component: Setup,
