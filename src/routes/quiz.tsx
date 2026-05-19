@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { goTo, setAnswer, useQuizSession } from "@/lib/quizStore";
-import { ArrowLeft, ArrowRight, Check, Flag, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Flag, Lightbulb, X } from "lucide-react";
 
 export const Route = createFileRoute("/quiz")({
   ssr: false,
@@ -13,7 +13,7 @@ function Quiz() {
   const session = useQuizSession();
   const navigate = useNavigate();
   
-  // Neuer Zustand: Befinden wir uns in der Auflösung der aktuellen Frage?
+  // Zustand für die Auflösung der aktuellen Frage
   const [isReviewed, setIsReviewed] = useState(false);
 
   useEffect(() => {
@@ -27,20 +27,20 @@ function Quiz() {
   const selected = session.answers[q.id] ?? [];
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;
 
-  // Punkteberechnung für die aktuelle Frage
+  // Filtert alle Antwort-Objekte heraus, die laut q.correct richtig sind
+  const correctAnswersList = q.answers.filter((a) => q.correct.includes(a.key));
+
+  // Punkteberechnung (1 Punkt wenn alles exakt stimmt, sonst 0)
   const calculatePointsForQuestion = () => {
     if (selected.length === 0) return 0;
-    
-    // Wenn alle korrekten Antworten exakt ausgewählt wurden
     const isCorrect =
       q.correct.length === selected.length &&
       q.correct.every((key) => selected.includes(key));
-      
-    return isCorrect ? 1 : 0; // Gibt 1 Punkt bei komplett richtig, sonst 0
+    return isCorrect ? 1 : 0;
   };
 
   const toggle = (key: string) => {
-    if (isReviewed) return; // Klicks sperren, wenn aufgelöst wurde
+    if (isReviewed) return;
 
     if (isMulti) {
       const nextAnswers = selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key];
@@ -52,10 +52,8 @@ function Quiz() {
 
   const handleNextClick = () => {
     if (!isReviewed) {
-      // Schritt 1: Zeige die Auflösung
       setIsReviewed(true);
     } else {
-      // Schritt 2: Weiter zur nächsten Frage
       setIsReviewed(false);
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
@@ -89,7 +87,6 @@ function Quiz() {
             {isMulti ? "Mehrere Antworten möglich" : "Eine Antwort"}
           </div>
           
-          {/* Punkteanzeige nach dem Überprüfen */}
           {isReviewed && (
             <div className={`text-sm font-semibold px-3 py-1 rounded-full ${calculatePointsForQuestion() > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               Punkte: {calculatePointsForQuestion()} / 1
@@ -104,27 +101,22 @@ function Quiz() {
             const isSelected = selected.includes(a.key);
             const isCorrectAnswer = q.correct.includes(a.key);
             
-            // Dynamische Rand- und Hintergrundfarben bestimmen
             let borderClass = "border-border bg-background hover:border-primary/40 hover:bg-accent/20";
             let iconContainerClass = "border-border bg-background text-muted-foreground";
 
             if (isReviewed) {
               if (isCorrectAnswer) {
-                // Richtig ausgefüllt oder richtige verpasste Antwort
                 borderClass = isSelected 
-                  ? "border-green-500 bg-green-50/50" // Grün umrandet wenn ausgewählt & richtig
-                  : "border-yellow-500 bg-yellow-50/30 border-dashed border-2"; // Gelb umrandet wenn richtig aber nicht gewählt
+                  ? "border-green-500 bg-green-50/50" 
+                  : "border-yellow-500 bg-yellow-50/30 border-dashed border-2"; 
                 iconContainerClass = "border-green-500 bg-green-500 text-white";
               } else if (isSelected && !isCorrectAnswer) {
-                // Falsch ausgewählt
                 borderClass = "border-red-500 bg-red-50/50";
                 iconContainerClass = "border-red-500 bg-red-500 text-white";
               } else {
-                // Nicht gewählt und war auch falsch
                 borderClass = "border-border bg-background opacity-60";
               }
             } else if (isSelected) {
-              // Standard-Auswahl vor der Auflösung
               borderClass = "border-primary bg-primary/5 shadow-md";
               iconContainerClass = "border-primary bg-primary text-primary-foreground";
             }
@@ -155,6 +147,23 @@ function Quiz() {
           })}
         </div>
       </article>
+
+      {/* Neue Info-Box für die richtige Lösung (wird nur nach dem Überprüfen angezeigt) */}
+      {isReviewed && (
+        <div className="animate-fade-up mt-4 rounded-2xl border border-blue-200 bg-blue-50/50 p-4 text-sm shadow-sm flex items-start gap-3">
+          <Lightbulb className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="grid gap-1">
+            <span className="font-semibold text-blue-900">Richtige Lösung:</span>
+            <div className="text-blue-800 space-y-1 mt-1">
+              {correctAnswersList.map((a) => (
+                <div key={a.key} className="font-medium">
+                  <span className="font-bold">{a.key}:</span> {a.text}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="safe-bottom fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 px-5 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
