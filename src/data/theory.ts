@@ -637,6 +637,5 @@ hierzu gehören Gemeinden, Städte usw.
 * POLICY DEVELOPMENT & ENFORCEMENT
     `.trim(),
   },
-};
   
 };
