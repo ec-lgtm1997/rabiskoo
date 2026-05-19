@@ -5,8 +5,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, type HistoryEntry } from "@/lib/quizStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -41,16 +39,9 @@ function Index() {
     }
   };
 
-  // NEU: Bereitet die Daten für das Statistik-Diagramm vor (die letzten 7 Versuche, chronologisch sortiert)
-  const chartData = useMemo(() => {
-    return [...history]
-      .slice(0, 7)
-      .reverse()
-      .map((entry, index) => ({
-        name: `${entry.date}`,
-        Ergebnis: entry.percentage,
-        info: entry.modeText,
-      }));
+  // Holt die letzten 7 Versuche für das Diagramm (chronologisch sortiert)
+  const chartEntries = useMemo(() => {
+    return [...history].slice(0, 7).reverse();
   }, [history]);
 
   return (
@@ -184,7 +175,7 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 2: HISTORIE MIT NEUER VISUELLER CHART-AUSWERTUNG */}
+        {/* REITER 2: HISTORIE MIT REALEM TAILWIND-CSS DIAGRAMM */}
         <TabsContent value="history" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
@@ -210,44 +201,60 @@ function Index() {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* NEU: Das visuelle Statistik-Diagramm */}
-              <div className="rounded-3xl border bg-card p-5 shadow-sm">
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground mb-4">
-                  <BarChart3 className="h-4 w-4 text-primary" /> Fortschritt (Letzte 7 Versuche)
+              
+              {/* NEUES NATIVES DIAGRAMM: 100% PASSEND ZU DEINEM APP-DESIGN */}
+              <div className="rounded-3xl border bg-card p-6 shadow-sm">
+                <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground mb-6">
+                  <BarChart3 className="h-4 w-4 text-primary" /> Lernkurve (Letzte 7 Versuche)
                 </h3>
-                <div className="h-48 w-full">
-                  <ChartContainer config={{ Ergebnis: { label: "Ergebnis (%)", color: "hsl(var(--primary))" } }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
-                        <XAxis 
-                          dataKey="name" 
-                          stroke="#888888" 
-                          fontSize={11} 
-                          tickLine={false} 
-                          axisLine={false} 
+                
+                {/* Das Diagramm-Skelett */}
+                <div className="flex h-40 items-end justify-between gap-2 border-b border-border pb-2 px-2">
+                  {chartEntries.map((entry) => {
+                    // Kürzt das Datum auf Tag und Monat (z.B. "19.05.")
+                    const shortDate = entry.date.split(".")[0] + "." + entry.date.split(".")[1];
+                    const isPassed = entry.percentage >= 60;
+
+                    return (
+                      <div key={entry.id} className="flex flex-1 flex-col items-center group relative h-full justify-end">
+                        
+                        {/* Hover-Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-20">
+                          <div className="bg-popover text-popover-foreground text-xs font-medium rounded-lg px-2.5 py-1.5 shadow-md border whitespace-nowrap text-center">
+                            <span className="font-bold block">{entry.percentage}%</span>
+                            <span className="text-[10px] text-muted-foreground">{entry.modeText}</span>
+                          </div>
+                          <div className="w-1.5 h-1.5 bg-popover border-r border-b rotate-45 -mt-1" />
+                        </div>
+
+                        {/* Prozent-Text über dem Balken */}
+                        <span className="text-[10px] font-bold text-muted-foreground mb-1">
+                          {entry.percentage}%
+                        </span>
+
+                        {/* Der eigentliche Balken */}
+                        <div 
+                          style={{ height: `${Math.max(8, entry.percentage)}%` }}
+                          className={`w-full max-w-[32px] rounded-t-lg transition-all duration-300 group-hover:brightness-95 group-hover:scale-x-105 ${
+                            isPassed 
+                              ? "bg-primary/20 border-t-4 border-primary" 
+                              : "bg-red-500/10 border-t-4 border-red-500"
+                          }`}
                         />
-                        <YAxis 
-                          stroke="#888888" 
-                          fontSize={11} 
-                          tickLine={false} 
-                          axisLine={false} 
-                          domain={[0, 100]}
-                          tickFormatter={(value) => `${value}%`}
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar 
-                          dataKey="Ergebnis" 
-                          fill="var(--color-Ergebnis)" 
-                          radius={[6, 6, 0, 0]} 
-                          maxBarSize={40}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                        
+                        {/* Datum unter dem Balken */}
+                        <span className="absolute top-full mt-2 text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
+                          {shortDate}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
+                {/* Zusätzlicher Abstandhalter für die absoluten Datums-Labels */}
+                <div className="h-4" />
               </div>
 
-              {/* Die Liste der Einträge darunter */}
+              {/* Die Liste der Einträge */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
                   Alle Einträge
