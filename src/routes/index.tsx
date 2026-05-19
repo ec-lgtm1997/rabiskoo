@@ -1,67 +1,90 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { GraduationCap, Target, BookOpen, Sparkles } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { BLOCKS } from "@/data/questions";
+import { BookOpen, GraduationCap, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Community Nurse – Prüfungs-Simulation" },
-      { name: "description", content: "Interaktive Multiple-Choice-Prüfungssimulation für Community Nurse – übe gezielt nach Themenblöcken oder im Prüfungsmodus." },
-      { property: "og:title", content: "Community Nurse – Prüfungs-Simulation" },
-      { property: "og:description", content: "Übe für deine Community-Nurse-Prüfung mit Multiple-Choice-Fragen und detaillierter Auswertung." },
-    ],
-  }),
-  component: Home,
+  component: Index,
 });
 
-function Home() {
+function Index() {
+  const navigate = useNavigate();
+
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-24 pt-12 sm:pt-20">
-      <div className="animate-fade-up flex items-center gap-2 text-sm font-medium text-primary">
-        <Sparkles className="h-4 w-4" />
-        Lernen mit Plan
-      </div>
-      <h1 className="animate-fade-up mt-3 text-4xl font-semibold sm:text-6xl">
-        Community Nurse
-      </h1>
-      <p className="animate-fade-up mt-4 max-w-xl text-lg text-muted-foreground">
-        Deine Prüfungs-Simulation für die extramurale Pflege. Übe gezielt nach Themenblock
-        oder simuliere eine komplette Prüfung mit Auswertung und Note.
-      </p>
-
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
-        <Link
-          to="/setup"
-          search={{ mode: "exam" }}
-          className="group relative overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
-        >
-          <Target className="h-7 w-7 opacity-90" />
-          <div className="mt-6 text-xl font-display font-semibold">Prüfungs-Modus</div>
-          <div className="mt-1 text-sm opacity-90">Wähle die Anzahl Fragen und lege los.</div>
-        </Link>
-
-        <Link
-          to="/setup"
-          search={{ mode: "block" }}
-          className="group relative overflow-hidden rounded-3xl border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-        >
-          <BookOpen className="h-7 w-7 text-warm" />
-          <div className="mt-6 text-xl font-display font-semibold">Themenblock üben</div>
-          <div className="mt-1 text-sm text-muted-foreground">Konzentriere dich auf einen der 7 Blöcke.</div>
-        </Link>
-      </div>
-
-      <section className="mt-14 rounded-3xl border bg-card/60 p-6 sm:p-8">
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <GraduationCap className="h-4 w-4" /> So funktioniert's
-        </div>
-        <ol className="mt-4 space-y-3 text-sm sm:text-base">
-          <li><span className="font-semibold text-primary">1.</span> Wähle Prüfungs-Modus oder einen Themenblock.</li>
-          <li><span className="font-semibold text-primary">2.</span> Beantworte Multiple-Choice-Fragen – eine oder mehrere Antworten können richtig sein.</li>
-          <li><span className="font-semibold text-primary">3.</span> Erhalte eine detaillierte Auswertung mit Punkten, Prozent und Schulnote.</li>
-        </ol>
-        <p className="mt-4 rounded-2xl bg-accent/40 p-4 text-sm text-accent-foreground">
-          Teilpunkte: Bei Mehrfach-Antworten zählt jede richtige Markierung. Falsche Klicks ziehen Punkte ab (nie unter 0).
+    <main className="mx-auto max-w-2xl px-5 py-12">
+      <div className="text-center">
+        <h1 className="text-4xl font-display font-extrabold tracking-tight sm:text-5xl">
+          Community Nurse <span className="text-primary">Lernportal</span>
+        </h1>
+        <p className="mt-3 text-lg text-muted-foreground">
+          Bereite dich optimal auf deine Prüfung vor. Wähle einen Themenblock oder starte eine Simulation.
         </p>
+      </div>
+
+      {/* Sektion 1: Prüfungssimulation */}
+      <section className="mt-12">
+        <h2 className="text-xl font-display font-bold flex items-center gap-2">
+          <GraduationCap className="h-5 w-5 text-primary" /> Prüfungssimulation
+        </h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <button
+            onClick={() =>
+              navigate({
+                to: "/setup",
+                search: { count: "30" }, // Übergibt die Anzahl als String für die Validierung
+              })
+            }
+            className="group rounded-3xl border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+          >
+            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Kleine Prüfung</h3>
+            <p className="mt-1 text-sm text-muted-foreground">30 zufällige Fragen aus allen Themenbereichen.</p>
+          </button>
+
+          <button
+            onClick={() =>
+              navigate({
+                to: "/setup",
+                search: { count: "60" }, // Übergibt die Anzahl als String für die Validierung
+              })
+            }
+            className="group rounded-3xl border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+          >
+            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Große Prüfung</h3>
+            <p className="mt-1 text-sm text-muted-foreground">60 zufällige Fragen für eine intensive Simulation.</p>
+          </button>
+        </div>
+      </section>
+
+      {/* Sektion 2: Themenblöcke */}
+      <section className="mt-12">
+        <h2 className="text-xl font-display font-bold flex items-center gap-2">
+          <Layers className="h-5 w-5 text-primary" /> Themenblöcke lernen
+        </h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              onClick={() =>
+                navigate({
+                  to: "/setup",
+                  search: { blockId: block.id }, // Übergibt die blockId sauber an die Route
+                })
+              }
+              className="group rounded-3xl border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md flex flex-col justify-between"
+            >
+              <div>
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-semibold text-lg group-hover:text-primary transition-colors leading-snug">
+                  {block.title}
+                </h3>
+              </div>
+              <p className="mt-2 text-xs font-medium text-muted-foreground bg-accent/50 px-2.5 py-1 rounded-full self-start">
+                Block {block.id}
+              </p>
+            </button>
+          ))}
+        </div>
       </section>
     </main>
   );
