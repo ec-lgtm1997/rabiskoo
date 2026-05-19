@@ -5,7 +5,7 @@ export type TheorySection = {
 };
 
 export const THEORY_DATA: Record<string, TheorySection> = {
-block1: {
+  block1: {
     id: "block1",
     title: "Grundlagen & Rollen der extramuralen Pflege",
     content: `
@@ -39,14 +39,14 @@ block1: {
 #### 2.3 Caremanagement
 **Definition:** Care Management bezeichnet den systematischen Aufbau, die Planung und die Steuerung einer verbindlichen und abgestimmten Zusammenarbeit aller professionellen und freiwilligen Akteure einer Region. Die Zusammenarbeit erfolgt auf Grundlage regionaler bzw. landesweiter Bedarfsplanungen und schafft klare Strukturen zwischen Gemeinden und Dienstleistungsanbietern.
 **Ziel:** Ziel ist es, Unterstützungs- und Pflegeangebote (ambulant, stationär sowie Case Management) bedarfsgerecht zu koordinieren und aufeinander abzustimmen.
-**Verbreitung:** In Vorarlberg ist Care Management überwiegend in den Gemeinden angesiedelt und landesweit umgesetzt.
+**Verbreitung:** In Vorarlberg is Care Management überwiegend in den Gemeinden angesiedelt und landesweit umgesetzt.
 
 #### 2.4 Acute Community Nurse
 **Definition:** Die Acute Community Nurse vereint Aufgaben einer diplomierten Gesundheits- und Krankenpflegeperson (DGKP) mit erweiterten notfallpflegerischen Kompetenzen, ähnlich jenen von Notfallsanitäter:innen. Der Dienst ist rund um die Uhr erreichbar und versorgt Patient:innen akut im häuslichen Umfeld. Dadurch kann in vielen Fällen ein Transport ins Krankenhaus vermieden werden.
 **Ziel:** Ziel ist es, unnötige Krankentransporte und Krankenhausaufenthalte zu reduzieren sowie eine rasche, wohnortnahe Akutversorgung sicherzustellen.
 
 #### 2.5 Occupational Health Nurse
-**Definition:** Eine Occupational Health Nurse (Betriebsgesundheitspflege) ist eine Pflegefachperson, die in Betrieben tätig ist und sich mit den Auswirkungen von Arbeit auf Gesundheit beschäftigt. Sie berät Arbeitnehmer:innen und Arbeitgeber:innen zu Themen wie Arbeitssicherheit, Prävention und Umgang mit chronischen Erkrankungen.
+**Definition:** Eine Occupational Health Nurse (Betriebsgesundheitspflege) is eine Pflegefachperson, die in Betrieben tätig ist und sich mit den Auswirkungen von Arbeit auf Gesundheit beschäftigt. Sie berät Arbeitnehmer:innen und Arbeitgeber:innen zu Themen wie Arbeitssicherheit, Prävention und Umgang mit chronischen Erkrankungen.
 **Ziel:** Ziel ist es, die Gesundheit zu schützen, arbeitsbedingte Erkrankungen zu verhindern und sichere, gesunde sowie produktive Arbeitsbedingungen zu fördern.
 **Verbreitung:** In Österreich noch wenig etabliert.
 
@@ -87,7 +87,7 @@ block1: {
 **Ziel:** Ziel ist es die gesunden Lebensjahre im Alter zu fördern und zu erhalten. Zudem soll die Selbstständigkeit unterstützt und die Versorgung in der eigenen Umgebung so lange wie möglich sichergestellt werden.
     `.trim(),
   },
-block2: {
+  block2: {
     id: "block2",
     title: "Setting & Ort der Pflege (Häusliches Umfeld & Barrierefreiheit)",
     content: `
@@ -152,58 +152,58 @@ block2: {
     content: `
 ### 4. Was bedeutet Familie
 
-**Definition:** Familie ist eine der „ursprünglichsten Formen sozialer Zusammengehörigkeit"[cite: 123]. Als Institution verknüpft Familie die Grundbedürfnisse von Individuum und Gattung (Sexualität und Intimität, soziale Reproduktion und gesellschaftliche Organisation)[cite: 123, 124].
+**Definition:** Familie ist eine der „ursprünglichsten Formen sozialer Zusammengehörigkeit". Als Institution verknüpft Familie die Grundbedürfnisse von Individuum und Gattung (Sexualität und Intimität, soziale Reproduktion und gesellschaftliche Organisation).
 
-**Soziale Definition:** Aus einem Elternpaar oder einem Elternteil und mindestens einem Kind bestehende [Lebens]gemeinschaft (mit emotionaler Eltern-Kind-Bindung)[cite: 125]. Gruppe aller miteinander [bluts]verwandten Personen[cite: 126].
+**Soziale Definition:** Aus einem Elternpaar oder einem Elternteil und mindestens einem Kind bestehende [Lebens]gemeinschaft (mit emotionaler Eltern-Kind-Bindung). Gruppe aller miteinander [bluts]verwandten Personen.
 
-**Biologische Definition:** Systematische Einheit, Kategorie, in der näher miteinander verwandte Gattungen tierischer oder pflanzlicher Lebewesen zusammengefasst sind[cite: 127].
+**Biologische Definition:** Systematische Einheit, Kategorie, in der näher miteinander verwandte Gattungen tierischer oder pflanzlicher Lebewesen zusammengefasst sind.
 
-Als exklusive Beziehungsform organisiert Familie: Geschlechterverhältnisse, wer mit wem zusammenlebt, die miteinander verschränkten Beziehungen zwischen Eltern und ihren Kindern, Rollenverständnisse, Aufgaben- und Arbeitsteilung, ermöglicht die Teilhabe am gesellschaftlichen Leben[cite: 128].
+Als exklusive Beziehungsform organisiert Familie: Geschlechterverhältnisse, wer mit wem zusammenlebt, die miteinander verschränkten Beziehungen zwischen Eltern und ihren Kindern, Rollenverständnisse, Aufgaben- und Arbeitsteilung, ermöglicht die Teilhabe am gesellschaftlichen Leben.
 
-Als Generationengeflecht eröffnet die Familie Entwicklungsräume, Möglichkeiten des Zusammenlebens, verantwortet Bildung, Erziehung und Sozialisation nachkommender Generationen[cite: 129].
+Als Generationengeflecht eröffnet die Familie Entwicklungsräume, Möglichkeiten des Zusammenlebens, verantwortet Bildung, Erziehung und Sozialisation nachkommender Generationen.
 
 #### Funktionen:
-* Als Institution verknüpft Familie die Grundbedürfnisse von Individuum und Gattung[cite: 131]. Dazu gehören Sexualität, Intimität, soziale Reproduktion und gesellschaftliche Organisation[cite: 131].
-* Als exklusive Beziehungsform organisiert Familie: Geschlechtsverhältnisse, wer mit wem zusammenlebt, Rollenverhältnisse, Aufgaben- und Arbeitsteilung, die miteinander verschränkten Beziehungen zwischen Eltern und ihren Kindern und ermöglicht die Teilhabe am gesellschaftlichen Leben[cite: 132].
-* Als Generationsgeflecht eröffnet die Familie: Entwicklungsräume, Möglichkeiten des Zusammenlebens, Verantwortet Bildung - Erziehung und Sozialisation nachkommender Generationen[cite: 133, 134].
+* Als Institution verknüpft Familie die Grundbedürfnisse von Individuum und Gattung. Dazu gehören Sexualität, Intimität, soziale Reproduktion und gesellschaftliche Organisation.
+* Als exklusive Beziehungsform organisiert Familie: Geschlechtsverhältnisse, wer mit wem zusammenlebt, Rollenverhältnisse, Aufgaben- und Arbeitsteilung, die miteinander verschränkten Beziehungen zwischen Eltern und ihren Kindern und ermöglicht die Teilhabe am gesellschaftlichen Leben.
+* Als Generationsgeflecht eröffnet die Familie: Entwicklungsräume, Möglichkeiten des Zusammenlebens, Verantwortet Bildung - Erziehung und Sozialisation nachkommender Generationen.
 
 #### Die Stadien des Familienlebenszyklus:
-1. Auszug aus dem Elternhaus: junge Erwachsene [cite: 136]
-2. Verbindung von zwei Familien durch Eheschließung: das neue Paar [cite: 137]
-3. Familien mit kleinen Kindern [cite: 137]
-4. Familien mit Jugendlichen [cite: 138]
-5. Kind(er) ins Leben entlassen und sich um das eigene Leben kümmern [cite: 139]
-6. Familie im späteren Lebensalter [cite: 140]
+1. Auszug aus dem Elternhaus: junge Erwachsene 
+2. Verbindung von zwei Familien durch Eheschließung: das neue Paar 
+3. Familien mit kleinen Kindern 
+4. Familien mit Jugendlichen 
+5. Kind(er) ins Leben entlassen und sich um das eigene Leben kümmern 
+6. Familie im späteren Lebensalter 
 
 #### Formen:
-Adoptivfamilien, Co-Parenting, Patchworkfamilien, Gleichgeschlechtliche Familien (Regenbogenfamilien), Alleinerziehende, Pflegefamilien, Kommunen, Kinderdorf/institutionelle Familien, Mehrgenerationen-Familien, Wahlfamilie, Paarfamilie, Freunde, Kohorte, Kernfamilie, Angehörigenfamilie, In Vitro Familien, Familien mit pflegenden Angehörigen, transnationale Familie* [cite: 141], Verwandtenpflege[cite: 141].
-*\* Der Begriff „transnationale Familien" wird heute für jene Familien verwendet, die nicht vorläufig, sondern zumindest mittelfristig für einige Jahre - ihr Leben zwischen verschiedenen geografischen Räumen organisieren[cite: 142].*
+Adoptivfamilien, Co-Parenting, Patchworkfamilien, Gleichgeschlechtliche Familien (Regenbogenfamilien), Alleinerziehende, Pflegefamilien, Kommunen, Kinderdorf/institutionelle Familien, Mehrgenerationen-Familien, Wahlfamilie, Paarfamilie, Freunde, Kohorte, Kernfamilie, Angehörigenfamilie, In Vitro Familien, Familien mit pflegenden Angehörigen, transnationale Familie*, Verwandtenpflege.
+*\* Der Begriff „transnationale Familien" wird heute für jene Familien verwendet, die nicht vorläufig, sondern zumindest mittelfristig für einige Jahre - ihr Leben zwischen verschiedenen geografischen Räumen organisieren.*
 
 #### Familie und Gesundheit:
-Familie kann als „hidden health care system" verstanden werden, da sie im Alltag zahlreiche gesundheitsbezogene Aufgaben übernehmen[cite: 143]. Sie sorgen für Pflege, Unterstützung bei Krankheit, emotionale Stabilität sowie für die gesundheitliche Sozialisation ihrer Mitglieder über den gesamten Lebensverlauf hinweg[cite: 143]. Neben Erziehung und Sozialisation wird Familien heute zunehmend die Verantwortung für eine gesunde Lebensführung zugeschrieben, etwa durch Ernährung, Bewegung und Prävention[cite: 143]. Gleichzeitig hängen Gesundheitschancen stark von sozialen Bedingungen wie Bildung, Einkommen und Lebenslage ab[cite: 143]. Soziale Ungleichheit kann die Gesundheitsressourcen von Familien deutlich einschränken[cite: 143]. Ein positives Familienklima, stabile Beziehungen und gegenseitige Unterstützung wirken als Schutzfaktoren, während Belastungen wie Armut, Stress oder Konflikte gesundheitliche Risiken darstellen[cite: 143, 144]. Insgesamt wird die Familie als wichtiger Ort der Gesundheitsförderung und Gesundheitssozialisation beschrieben, dessen Möglichkeiten jedoch stark von gesellschaftlichen Rahmenbedingungen beeinflusst werden[cite: 144].
+Familie kann als „hidden health care system" verstanden werden, da sie im Alltag zahlreiche gesundheitsbezogene Aufgaben übernehmen. Sie sorgen für Pflege, Unterstützung bei Krankheit, emotionale Stabilität sowie für die gesundheitliche Sozialisation ihrer Mitglieder über den gesamten Lebensverlauf hinweg. Neben Erziehung und Sozialisation wird Familien heute zunehmend die Verantwortung für eine gesunde Lebensführung zugeschrieben, etwa durch Ernährung, Bewegung und Prävention. Gleichzeitig hängen Gesundheitschancen stark von sozialen Bedingungen wie Bildung, Einkommen und Lebenslage ab. Soziale Ungleichheit kann die Gesundheitsressourcen von Familien deutlich einschränken. Ein positives Familienklima, stabile Beziehungen und gegenseitige Unterstützung wirken als Schutzfaktoren, während Belastungen wie Armut, Stress oder Konflikte gesundheitliche Risiken darstellen. Insgesamt wird die Familie als wichtiger Ort der Gesundheitsförderung und Gesundheitssozialisation beschrieben, dessen Möglichkeiten jedoch stark von gesellschaftlichen Rahmenbedingungen beeinflusst werden.
 
-Die Ottawa-Charta der WHO (1986) beschreibt Gesundheit als etwas, das im Alltag entsteht - also dort, wo Menschen leben, arbeiten, lernen und Beziehungen führen[cite: 145]. Im Unterschied zum biomedizinischen Modell steht nicht nur die Behandlung von Krankheit im Mittelpunkt, sondern die Förderung von Ressourcen, Lebensbedingungen, Selbstbestimmung und Gesundheitskompetenz[cite: 146].
+Die Ottawa-Charta der WHO (1986) beschreibt Gesundheit als etwas, das im Alltag entsteht - also dort, wo Menschen leben, arbeiten, lernen und Beziehungen führen. Im Unterschied zum biomedizinischen Modell steht nicht nur die Behandlung von Krankheit im Mittelpunkt, sondern die Förderung von Ressourcen, Lebensbedingungen, Selbstbestimmung und Gesundheitskompetenz.
 
 ---
 
 ### 5. Familienzentrierte Pflege (FZP)
 
-Familienzentrierte Pflege ist eine Partnerschaft zwischen Familien und Pflegepersonal, die darauf abzielt, die Gesundheit und das Wohlbefinden der Familie zu fördern, indem die individuellen Bedürfnisse und Perspektiven jedes Familienmitglieds berücksichtigt werden[cite: 148].
+Familienzentrierte Pflege ist eine Partnerschaft zwischen Familien und Pflegepersonal, die darauf abzielt, die Gesundheit und das Wohlbefinden der Familie zu fördern, indem die individuellen Bedürfnisse und Perspektiven jedes Familienmitglieds berücksichtigt werden.
 
-**Bedarf der Familie:** Entlastung, Erhohlung, Information, Beratung, Schulung und persönliche Aussprache [cite: 149]
+**Bedarf der Familie:** Entlastung, Erhohlung, Information, Beratung, Schulung und persönliche Aussprache 
 
-**Angebote:** Bundesministerium für Arbeit Soziales Gesundheit Pflege und Konsumentenschutz, pflege.gv.at, Pflege daheim, vorarlberg care [cite: 150]
+**Angebote:** Bundesministerium für Arbeit Soziales Gesundheit Pflege und Konsumentenschutz, pflege.gv.at, Pflege daheim, vorarlberg care 
 
-**Theorien:** Pluralismus (viele Ansichten, was Familie ist), Kybernetik (Beschäftigt sich mit der Selbstregulation von Systemen), Kommunikationstheorie (Art und Weise der Kommunikation), Veränderungstheorie (Umgang mit Veränderungen), Erkenntnistheorie (welchen Hintergrund bringe ich mit und wie sehe ich gewisse Dinge), Systemtheorie [cite: 151]
+**Theorien:** Pluralismus (viele Ansichten, was Familie ist), Kybernetik (Beschäftigt sich mit der Selbstregulation von Systemen), Kommunikationstheorie (Art und Weise der Kommunikation), Veränderungstheorie (Umgang mit Veränderungen), Erkenntnistheorie (welchen Hintergrund bringe ich mit und wie sehe ich gewisse Dinge), Systemtheorie 
 
 #### 5.1 Systemtheorie
-„Ein System lässt sich definieren als die Gesamtheit miteinander interagierender Elemente"[cite: 152]. In der Familienzentrierten Pflege wird die Familie als Einheit verstanden[cite: 153]. Der Fokus der Beobachtung liegt auf der Interaktion der Familienmitglieder untereinander sowie der Interaktion zwischen der Familie und der Krankheit/dem Problem[cite: 154]. Jedes Familienmitglied ist Teil dieser Einheit/dieses Systems und auch Individuum und sein eigenständiges System[cite: 155].
+„Ein System lässt sich definieren als die Gesamtheit miteinander interagierender Elemente". In der Familienzentrierten Pflege wird die Familie als Einheit verstanden. Der Fokus der Beobachtung liegt auf der Interaktion der Familienmitglieder untereinander sowie der Interaktion zwischen der Familie und der Krankheit/dem Problem. Jedes Familienmitglied ist Teil dieser Einheit/dieses Systems und auch Individuum und sein eigenständiges System.
 
-* **Konzept 1:** Das Familiensystem ist Teil größerer Suprasysteme und setzt sich aus vielen Subsystemen (z. B. Mutter-Kind-Beziehung, Eltern, Geschwister) zusammen[cite: 156].
-* **Konzept 2:** Die Familie als Ganzes, ist größer als die Summe ihrer Teile[cite: 157].
-* **Konzept 3:** Die Veränderung eines Familienmitgliedes beeinflusst alle andren Familienmitglieder[cite: 158].
-* **Konzept 4:** Die Familie ist in der Lage, eine Balance zwischen Veränderung und Stabilität zu schaffen[cite: 159].
-* **Konzept 5:** Zirkuläre Kausalität erklärt das Verhalten von Familienmitgliedern besser als lineare Kausalität[cite: 160].
+* **Konzept 1:** Das Familiensystem ist Teil größerer Suprasysteme und setzt sich aus vielen Subsystemen (z. B. Mutter-Kind-Beziehung, Eltern, Geschwister) zusammen.
+* **Konzept 2:** Die Familie als Ganzes, ist größer als die Summe ihrer Teile.
+* **Konzept 3:** Die Veränderung eines Familienmitgliedes beeinflusst alle andren Familienmitglieder.
+* **Konzept 4:** Die Familie ist in der Lage, eine Balance zwischen Veränderung und Stabilität zu schaffen.
+* **Konzept 5:** Zirkuläre Kausalität erklärt das Verhalten von Familienmitgliedern besser als lineare Kausalität.
     `.trim(),
   },
   
@@ -213,56 +213,56 @@ Familienzentrierte Pflege ist eine Partnerschaft zwischen Familien und Pflegeper
     content: `
 ### 6. Phasen eines pflegerischen Familiengesprächs
 
-* B-Beziehungsaufbau [cite: 161, 162]
-* A-Assessment [cite: 161, 163]
-* I-Intervention [cite: 161, 164]
-* A-Abschluss [cite: 161, 165]
+* B-Beziehungsaufbau 
+* A-Assessment 
+* I-Intervention 
+* A-Abschluss 
 
 #### Phasen des Beziehungsaufbaus:
-Die Pflegeperson ist Partner:in und Berater:in [cite: 166, 167] der Familie zeigt wohlwollendes Interesse, schätz Stärken und Ressourcen der Familie und verhindert kritische Einschätzungen und Schuldzuweisungen[cite: 168, 171]. Die Pflegeperson bringt ihr Wissen über Gesundheitsförderung und den Umgang mit Krankheit in die Familie ein[cite: 172]. Die Familienmitglieder bringen ihr Wissen über Gesundheit und ihre Krankheitserfahrung in die professionelle Beziehung mit ein[cite: 173]. Basis für den gemeinsamen pflegerischen Prozess[cite: 174].
+Die Pflegeperson ist Partner:in und Berater:in der Familie zeigt wohlwollendes Interesse, schätz Stärken und Ressourcen der Familie und verhindert kritische Einschätzungen und Schuldzuweisungen. Die Pflegeperson brings ihr Wissen über Gesundheitsförderung und den Umgang mit Krankheit in die Familie ein. Die Familienmitglieder bringen ihr Wissen über Gesundheit und ihre Krankheitserfahrung in die professionelle Beziehung mit ein. Basis für den gemeinsamen pflegerischen Prozess.
 
 #### Phasen des Assessments:
-Diese Phase betrifft die Identifizierung und Analyse der Probleme & Gegenüberstellung von Stärken und Problemen[cite: 175, 176]. In dieser Phase wird es der Familie ermöglicht, ihre Situation darzustellen[cite: 177].
+Diese Phase betrifft die Identifizierung und Analyse der Probleme & Gegenüberstellung von Stärken und Problemen. In dieser Phase wird es der Familie ermöglicht, ihre Situation darzustellen.
 
 #### Phase der Intervention:
-Diese Phase ist das Kernstück der klinischen Arbeit mit Familien und dient der Schaffung eines Kontexts, welcher unterstützend dabei wirkt, kleine und große Veränderungen zu schaffen[cite: 178, 179]. Pläne sollten gemeinsam erarbeitet und auf die individuelle Situation der Familie abgestimmt werden[cite: 180].
+Diese Phase ist das Kernstück der klinischen Arbeit mit Familien und dient der Schaffung eines Kontexts, welcher unterstützend dabei wirkt, kleine und große Veränderungen zu schaffen. Pläne sollten gemeinsam erarbeitet und auf die individuelle Situation der Familie abgestimmt werden.
 
 #### Phase des Abschlusses:
-Die professionelle Beziehung wird auf eine Art beendet, welche die Familie in die Lage versetzt, die konstruktiven Veränderungen beizubehalten, neue Sichtweisen zu erlangen und förderliche Überzeugungen zu entwickeln[cite: 181, 182].
+Die professionelle Beziehung wird auf eine Art beendet, welche die Familie in die Lage versetzt, die konstruktiven Veränderungen beizubehalten, neue Sichtweisen zu erlangen und förderliche Überzeugungen zu entwickeln.
 
 ---
 
 ### 7. CFAM-Calgary-Familien-Assessment-Modell
 
-Das CFAM ist ein Werkzeug zur Erhebung der Familiensituation, von Ressourcen und Problemen[cite: 183, 184]. Es dient zur Informations- und Datenerhebung und als Struktur für die klinische Arbeit verwendet werden[cite: 185]. Das Calgary Familien-Assessment-Modell besteht aus drei Hauptkategorien: Struktur, Entwicklung & Funktion[cite: 186]. Jede Kategorie lässt sich in Subkategorien unterteilen[cite: 186].
+Das CFAM ist ein Werkzeug zur Erhebung der Familiensituation, von Ressourcen und Problemen. Es dient zur Informations- und Datenerhebung und als Struktur für die klinische Arbeit verwendet werden. Das Calgary Familien-Assessment-Modell besteht aus drei Hauptkategorien: Struktur, Entwicklung & Funktion. Jede Kategorie lässt sich in Subkategorien unterteilen.
 
 #### Instrumente:
 
 ##### Strukturelles Assessment:
 
 ###### Genogramm:
-graphische Darstellung des Familienstammbaums/Familienstruktur - es liefert eine Fülle an Daten im Zusammenhang mit Beziehungsaufbau und Entwicklung der Familie im Verlauf der Zeit und ermöglicht den Pflegenden Hypothesen für weitere Evaluationen im Zuge des CFAM zu entwickeln[cite: 188, 189, 190].
+graphische Darstellung des Familienstammbaums/Familienstruktur - es liefert eine Fülle an Daten im Zusammenhang mit Beziehungsaufbau und Entwicklung der Familie im Verlauf der Zeit und ermöglicht den Pflegenden Hypothesen für weitere Evaluationen im Zuge des CFAM zu entwickeln.
 
 ###### Hinweise zur darstellung:
-* Familienmitglieder einer Generation werden horizontal dargestellt [cite: 191, 192]
-* Eheschließungen oder eheähnliche Beziehungen werden durch horizontale Linien gekennzeichnet [cite: 192, 193]
-* Kinder durch vertikale Linien [cite: 194]
-* die Darstellung der Rangordnung der Kinder erfolgt von links nach rechts und beginnt mit dem ältesten Kind [cite: 195]
-* Name und Alter werden in die Quadrate bzw. Kreise eingetragen[cite: 196]. Außerhalb des Kreises/Quadrats werden wichtige Informationen eingetragen[cite: 196].
-* aktuell in einem Haushalt lebende Personen werden eingekreist[cite: 197].
+* Familienmitglieder einer Generation werden horizontal dargestellt 
+* Eheschließungen oder eheähnliche Beziehungen werden durch horizontale Linien gekennzeichnet 
+* Kinder durch vertikale Linien 
+* die Darstellung der Rangordnung der Kinder erfolgt von links nach rechts und beginnt mit dem ältesten Kind 
+* Name und Alter werden in die Quadrate bzw. Kreise eingetragen. Außerhalb des Kreises/Quadrats werden wichtige Informationen eingetragen.
+* aktuell in einem Haushalt lebende Personen werden eingekreist.
 
 ###### Ökogramm:
-Das Ökogramm soll die Kontakte der Familie zu größeren Systemen aufzeigen, positive als auch konfliktträchtige Beziehungen zur "Außenwelt" werden grafisch sichtbar gemacht und es zeigt auf, wo Ressourcen vorhanden sind oder wo sie fehlen[cite: 198, 199].
+Das Ökogramm soll die Kontakte der Familie zu größeren Systemen aufzeigen, positive als auch konfliktträchtige Beziehungen zur " Außenwelt" werden grafisch sichtbar gemacht und es zeigt auf, wo Ressourcen vorhanden sind oder wo sie fehlen.
 
 ##### Assessment der Entwicklung:
-Dieses Instrument zeigt jeden Entwicklungsschritt der Familie in einen neuen Familienlebenszyklus ist auch durch einen emotionalen Übergangsprozess gekennzeichnet[cite: 203, 204]. Jedes Stadium bringt Themen und Aufgaben mit sich, welche von der Familie zu bewältigen sind[cite: 205].
+Dieses Instrument zeigt jeden Entwicklungsschritt der Familie in einen neuen Familienlebenszyklus ist auch durch einen emotionalen Übergangsprozess gekennzeichnet. Jedes Stadium bringt Themen und Aufgaben mit sich, welche von der Familie zu bewältigen sind.
 
 ##### Funktionales Assessment:
-Das Ziel des funktionalen Assessments ist es, das Verhalten von Individuen untereinander zu einem bestimmten Zeitpunkt zu registrieren[cite: 206, 207]. Das funktionale Assessment kann in zwei Hauptkategorien unterteilt werden[cite: 208]:
-* **Instrumentelle Funktion** (Routinetätigkeiten des täglichen Lebens - Essen, Trinken, Schlafen, Waschen, Injektionen geben, Verbandswechsel) [cite: 209, 210]
-* **Expressive Funktion** (Kommunikation, Problemlösung, Überzeugungen, Allianzen, Koalitionen, Rollen) [cite: 211]
+Das Ziel des funktionalen Assessments ist es, das Verhalten von Individuen untereinander zu einem bestimmten Zeitpunkt zu registrieren. Das funktionale Assessment kann in zwei Hauptkategorien unterteilt werden:
+* **Instrumentelle Funktion** (Routinetätigkeiten des täglichen Lebens - Essen, Trinken, Schlafen, Waschen, Injektionen geben, Verbandswechsel) 
+* **Expressive Funktion** (Kommunikation, Problemlösung, Überzeugungen, Allianzen, Koalitionen, Rollen) 
 
-**Schlussfolgerung:** CFAM ist ein umfassendes und vollständiges Familien-Assessment-Modell, dessen Umgang durch die graphische Darstellung erleichtert wird[cite: 212]. Das Modell versteht sich als Konzept, welches zur Orientierung und Erörterung bei Problemen verwendet werden kann[cite: 213]. Mit Hilfe der drei Hauptkategorien (Struktur, Entwicklung und Funktion) werden Stärken und Probleme eingeschätzt[cite: 214]. Nach Abschluss des Assessments wird gemeinsam entschieden, ob eine Intervention angezeigt ist[cite: 215].
+**Schlussfolgerung:** CFAM ist ein umfassendes und vollständiges Familien-Assessment-Modell, dessen Umgang durch die graphische Darstellung erleichtert wird. Das Modell versteht sich als Konzept, welches zur Orientierung und Erörterung bei Problemen verwendet werden kann. Mit Hilfe der drei Hauptkategorien (Struktur, Entwicklung und Funktion) werden Stärken und Probleme eingeschätzt. Nach Abschluss des Assessments wird gemeinsam entschieden, ob eine Intervention angezeigt ist.
     `.trim(),
   },
   
@@ -544,7 +544,7 @@ hierzu gehören Gemeinden, Städte usw.
 
 **Standorte:** Bludenz, Dornbirn, Wolfurt
 
-**Zielgruppe:** ältere und hochbetagte Menschen in ihrem direkten Wohnumfeld mit bevorstehendem oder vorhandenem Informations-, Beratungs, Pflege- oder Unterstützungsbedarf in pflegebezogenen und gesundheitlichen Belangen. Sowie pflegende oder betreuuende An- und Zugehörige im familiären Rahmen. Insbesondere Personen, die noch keine mobilen Dienste oder andere Angebote von Pflegeeinrichtungen in Anspruch nehmen - sprich gesunde Menschen.
+**Zielgruppe:** ältere und hochbetagte Menschen in ihrem directen Wohnumfeld mit bevorstehendem oder vorhandenem Informations-, Beratungs, Pflege- oder Unterstützungsbedarf in pflegebezogenen und gesundheitlichen Belangen. Sowie pflegende oder betreuuende An- und Zugehörige im familiären Rahmen. Insbesondere Personen, die noch keine mobilen Dienste oder andere Angebote von Pflegeeinrichtungen in Anspruch nehmen - sprich gesunde Menschen.
 
 #### Aufgabengebiete:
 * sind zentrale Anlaufstelle für Fragen zu Pflege und Gesundheit
