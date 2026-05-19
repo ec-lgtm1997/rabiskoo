@@ -4,6 +4,7 @@ import { goTo, setAnswer, useQuizSession } from "@/lib/quizStore";
 import { ArrowLeft, ArrowRight, Check, Flag } from "lucide-react";
 
 export const Route = createFileRoute("/quiz")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Prüfung läuft – Community Nurse" }] }),
   component: Quiz,
 });
