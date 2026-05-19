@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
 import { THEORY_DATA } from "@/data/theory";
-import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile } from "lucide-react";
+import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile, Search, X } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
@@ -16,6 +16,7 @@ function Index() {
   const [questionCount, setQuestionCount] = useState<number>(30);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedBlockId, setSelectedBlockId] = useState<string>("block1");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const presetCounts = [5, 10, 20, 30, 40, 50];
 
   useEffect(() => {
@@ -56,6 +57,45 @@ function Index() {
     return [...history].slice(0, 7).reverse();
   }, [history]);
 
+  // Intelligente, fehlertolerante globale Suche über alle Blöcke und Inhalte
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+
+    const results: { blockId: string; title: string; type: 'title' | 'content'; snippet: string }[] = [];
+
+    Object.values(THEORY_DATA).forEach((block) => {
+      // 1. Treffer im Titel prüfen
+      if (block.title.toLowerCase().includes(query)) {
+        results.push({
+          blockId: block.id,
+          title: block.title,
+          type: 'title',
+          snippet: "Kapitelüberschrift enthält Suchbegriff"
+        });
+      }
+
+      // 2. Zeilenweise Treffer im Inhalt prüfen mit Kontext-Auszug (Snippet)
+      const lines = block.content.split("\n");
+      lines.forEach((line) => {
+        const cleanLine = line.replace(/[\*\#]/g, "").trim();
+        if (cleanLine.toLowerCase().includes(query)) {
+          // Verhindert doppelte identische Snippets
+          if (!results.some(r => r.snippet === cleanLine)) {
+            results.push({
+              blockId: block.id,
+              title: block.title,
+              type: 'content',
+              snippet: cleanLine
+            });
+          }
+        }
+      });
+    });
+
+    return results;
+  }, [searchQuery]);
+
   // Holt die Daten des aktuell ausgewählten Blocks für den Lernbereich
   const currentBlockTheory = useMemo(() => {
     return THEORY_DATA[selectedBlockId as keyof typeof THEORY_DATA];
@@ -89,28 +129,90 @@ function Index() {
           </TabsTrigger>
         </TabsList>
 
-        {/* REITER 1: LERNBEREICH (NEU) */}
+        {/* REITER 1: LERNBEREICH (MIT INTELLIGENTER SUCHE) */}
         <TabsContent value="lernen" className="mt-8 focus-visible:outline-none focus-visible:ring-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             
-            {/* Linkes Menü: Liste der Blöcke */}
-            <div className="md:col-span-1 bg-card p-4 rounded-[2rem] border border-border/40 shadow-sm space-y-1 md:sticky md:top-6">
-              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-2 mb-3">
-                Themenübersicht
-              </p>
-              {Object.values(THEORY_DATA).map((block) => (
-                <button
-                  key={block.id}
-                  onClick={() => setSelectedBlockId(block.id)}
-                  className={`w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
-                    selectedBlockId === block.id
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/10 pl-4"
-                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-                  }`}
-                >
-                  {block.title}
-                </button>
-              ))}
+            {/* Linkes Menü: Suche & Inhaltsverzeichnis */}
+            <div className="md:col-span-1 space-y-4 md:sticky md:top-6">
+              
+              {/* Das Intelligente Suchfeld */}
+              <div className="bg-card p-4 rounded-[1.5rem] border border-border/40 shadow-sm relative">
+                <div className="relative flex items-center">
+                  <Search className="absolute left-3 h-4 w-4 text-muted-foreground/60" />
+                  <input
+                    type="text"
+                    placeholder="Skript intelligent durchsuchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 bg-secondary/40 border border-border/60 rounded-xl text-xs sm:text-sm font-medium placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2.5 p-1 rounded-lg text-muted-foreground/60 hover:bg-secondary"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Dynamische Steuerung: Normales Verzeichnis vs. Suchergebnisse */}
+              <div className="bg-card p-4 rounded-[2rem] border border-border/40 shadow-sm space-y-1">
+                {searchQuery.trim() === "" ? (
+                  <>
+                    <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-2 mb-3">
+                      Themenübersicht
+                    </p>
+                    {Object.values(THEORY_DATA).map((block) => (
+                      <button
+                        key={block.id}
+                        onClick={() => setSelectedBlockId(block.id)}
+                        className={`w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
+                          selectedBlockId === block.id
+                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/10 pl-4"
+                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                        }`}
+                      >
+                        {block.title}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest px-2 mb-3 flex items-center justify-between">
+                      <span>Suchtreffer ({searchResults.length})</span>
+                    </p>
+                    {searchResults.length === 0 ? (
+                      <p className="text-xs text-muted-foreground p-3 text-center font-medium">
+                        Keine genauen Textstellen gefunden.
+                      </p>
+                    ) : (
+                      <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                        {searchResults.map((res, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedBlockId(res.blockId);
+                            }}
+                            className={`w-full text-left p-2.5 rounded-xl border border-transparent transition-all hover:bg-secondary/70 ${
+                              selectedBlockId === res.blockId ? "bg-secondary/40 border-border/60" : ""
+                            }`}
+                          >
+                            <span className="block text-[10px] font-extrabold text-primary uppercase tracking-wider mb-0.5">
+                              {res.title}
+                            </span>
+                            <span className="text-xs font-bold text-foreground block truncate">
+                              {res.snippet}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Rechte Anzeige: Strukturierter & Schön formulierter Lehrtext */}
@@ -126,19 +228,36 @@ function Index() {
               {/* Intelligenter Parser für Überschriften, Listen und Inline-Fettung */}
               <div className="space-y-6 text-foreground/90 text-sm sm:text-base leading-relaxed">
                 {(() => {
+                  // Textstellen-Highlighting-Funktion
                   const renderInlineMarkdown = (text: string) => {
                     if (!text) return "";
+                    
+                    let elements: any[] = [];
                     const parts = text.split("**");
-                    return parts.map((part, index) => {
-                      if (index % 2 === 1) {
-                        return (
-                          <strong key={index} className="font-bold text-foreground mx-px">
-                            {part}
-                          </strong>
-                        );
+                    
+                    parts.forEach((part, index) => {
+                      const isBold = index % 2 === 1;
+                      const query = searchQuery.trim().toLowerCase();
+
+                      // Wenn eine aktive Suche läuft, heben wir das gesuchte Wort farblich hervor
+                      if (query && part.toLowerCase().includes(query)) {
+                        const regex = new RegExp(`(${query})`, "gi");
+                        const subParts = part.split(regex);
+                        
+                        const highlighted = subParts.map((sub, subIdx) => {
+                          if (sub.toLowerCase() === query) {
+                            return <mark key={subIdx} className="bg-yellow-100 text-yellow-900 rounded px-0.5 font-bold">{sub}</mark>;
+                          }
+                          return sub;
+                        });
+
+                        elements.push(isBold ? <strong key={index} className="font-bold text-foreground mx-px">{highlighted}</strong> : highlighted);
+                      } else {
+                        elements.push(isBold ? <strong key={index} className="font-bold text-foreground mx-px">{part}</strong> : part);
                       }
-                      return part;
                     });
+
+                    return elements;
                   };
               
                   return currentBlockTheory?.content ? currentBlockTheory.content.split("\n").map((line, lineIdx) => {
