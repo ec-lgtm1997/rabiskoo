@@ -48,8 +48,17 @@ export function getSession(): QuizSession | null {
 
 export function setAnswer(qid: string, selected: string[]) {
   if (!session) return;
-  session.answers[qid] = selected;
-  emit();
+  
+  // Erstellt eine komplett neue Objektreferenz, damit React die Änderung erkennt
+  session = {
+    ...session,
+    answers: {
+      ...session.answers,
+      [qid]: selected,
+    },
+  };
+  
+  emit(); // Signalisiert den Komponenten das Update
 }
 
 export function goTo(index: number) {
