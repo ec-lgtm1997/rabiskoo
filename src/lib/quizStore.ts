@@ -7,6 +7,7 @@ export type QuizSession = {
   currentIndex: number;
   startedAt: number;
   mode: { type: "block"; blockId: string } | { type: "count"; count: number };
+  instantReview: boolean; // <-- NEU: Steuert, ob direkt aufgelöst wird
 };
 
 let session: QuizSession | null = null;
@@ -25,7 +26,8 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function startQuiz(mode: QuizSession["mode"]) {
+// Erweitert um den zweiten Parameter instantReview
+export function startQuiz(mode: QuizSession["mode"], instantReview: boolean = false) {
   let pool: Question[];
   if (mode.type === "block") {
     pool = QUESTIONS.filter((q) => q.block === mode.blockId);
@@ -33,11 +35,12 @@ export function startQuiz(mode: QuizSession["mode"]) {
     pool = shuffle(QUESTIONS).slice(0, Math.min(mode.count, QUESTIONS.length));
   }
   session = {
-    questions: mode.type === "block" ? pool : pool,
+    questions: pool,
     answers: {},
     currentIndex: 0,
     startedAt: Date.now(),
     mode,
+    instantReview, // <-- NEU hier zugewiesen
   };
   emit();
 }
@@ -48,8 +51,6 @@ export function getSession(): QuizSession | null {
 
 export function setAnswer(qid: string, selected: string[]) {
   if (!session) return;
-  
-  // Erstellt eine komplett neue Objektreferenz, damit React die Änderung erkennt
   session = {
     ...session,
     answers: {
@@ -57,8 +58,7 @@ export function setAnswer(qid: string, selected: string[]) {
       [qid]: selected,
     },
   };
-  
-  emit(); // Signalisiert den Komponenten das Update
+  emit();
 }
 
 export function goTo(index: number) {
