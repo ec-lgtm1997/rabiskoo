@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { clearSession, saveSessionToHistory, useQuizSession } from "@/lib/quizStore";
-import { useEffect, useRef } from "react";
-import { Award, BookOpen, CheckCircle, Home, RefreshCw, XCircle } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { clearSession, useQuizSession } from "@/lib/quizStore";
+import { useEffect } from "react";
+import { Award, BookOpen, Home, XCircle, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/results")({
   component: ResultsPage,
@@ -10,9 +10,7 @@ export const Route = createFileRoute("/results")({
 function ResultsPage() {
   const session = useQuizSession();
   const navigate = useNavigate();
-  const savedRef = useRef(false);
 
-  // Berechne Punkte
   let correctCount = 0;
   if (session) {
     session.questions.forEach((q) => {
@@ -24,68 +22,60 @@ function ResultsPage() {
     });
   }
 
-  // WICHTIG: Speichert die Session automatisch beim ersten Laden der Ergebnisseite
   useEffect(() => {
-    if (!session) {
-      navigate({ to: "/" });
-      return;
-    }
-    if (!savedRef.current) {
-      saveSessionToHistory(correctCount);
-      savedRef.current = true;
-    }
-  }, [session, navigate, correctCount]);
+    if (!session) navigate({ to: "/" });
+  }, [session, navigate]);
 
   if (!session) return null;
 
   const totalQuestions = session.questions.length;
   const percentage = Math.round((correctCount / totalQuestions) * 100);
-  const passed = percentage >= 60; // Bestehensgrenze bei z.B. 60%
+  const passed = percentage >= 60;
 
   return (
-    <main className="mx-auto max-w-xl px-5 py-12 text-center">
-      <div className="rounded-3xl border bg-card p-8 shadow-md">
-        <div className="flex justify-center">
+    <main className="mx-auto max-w-xl px-5 py-14 sm:py-24 antialiased animate-in fade-in duration-500">
+      <div className="rounded-[2.5rem] border border-border/40 bg-card p-6 shadow-2xl shadow-foreground/[0.02] sm:p-10 text-center relative overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+        
+        <div className="flex justify-center relative z-10">
           {passed ? (
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
-              <Award className="h-10 w-10" />
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-gradient-to-br from-green-400/20 to-green-500/10 text-green-600 shadow-inner">
+              <Award className="h-10 w-10 stroke-[2]" />
             </div>
           ) : (
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
-              <XCircle className="h-10 w-10" />
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-gradient-to-br from-red-400/20 to-red-500/10 text-red-500 shadow-inner">
+              <XCircle className="h-10 w-10 stroke-[2]" />
             </div>
           )}
         </div>
 
-        <h1 className="mt-6 text-3xl font-display font-extrabold">
-          {passed ? "Bestanden!" : "Leider nicht bestanden"}
+        <h1 className="mt-8 text-3xl font-display font-extrabold tracking-tight text-foreground sm:text-4xl">
+          {passed ? "Herzlichen Glückwunsch!" : "Kopf hoch, weiter geht's!"}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Du hast die Prüfungssimulation abgeschlossen. Das Ergebnis wurde in deiner Historie gesichert.
+        <p className="mt-3 text-sm text-muted-foreground/90 font-medium max-w-sm mx-auto leading-relaxed">
+          {passed 
+            ? "Du hast die Simulation mit Bravour bestanden. Deine Ergebnisse sind sicher in der Historie verwahrt!"
+            : "Das war ein super Training. Nutze die Fehler-Anzeige, um beim nächsten Mal voll durchzustarten."}
         </p>
 
-        {/* Score-Anzeige */}
-        <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl bg-accent/30 p-4">
-          <div>
-            <span className="block text-3xl font-black text-foreground">{correctCount} / {totalQuestions}</span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Richtige Fragen</span>
+        {/* Die Scoreboard-Kacheln im Soft-Look */}
+        <div className="mt-10 grid grid-cols-2 gap-4 rounded-3xl bg-secondary/40 p-5 border shadow-inner">
+          <div className="space-y-0.5">
+            <span className="block text-2xl sm:text-3xl font-black text-foreground tracking-tight">{correctCount} / {totalQuestions}</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Richtige Antworten</span>
           </div>
-          <div>
-            <span className="block text-3xl font-black text-primary">{percentage}%</span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ergebnis</span>
+          <div className="space-y-0.5 border-l border-border/60">
+            <span className="block text-2xl sm:text-3xl font-black text-primary tracking-tight">{percentage}%</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Deine Quote</span>
           </div>
         </div>
 
-        <div className="mt-8 space-y-3">
-          {/* Knopf um die Fragen direkt noch mal im Review-Modus durchzuschauen */}
+        <div className="mt-10 space-y-3 relative z-10">
           <button
-            onClick={() => {
-              // Wir lassen die Session aktiv, aktivieren Review und springen zum Anfang
-              navigate({ to: "/quiz" });
-            }}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-primary/20 hover:border-primary/40 bg-background px-6 py-3.5 font-semibold text-foreground transition-all hover:bg-accent"
+            onClick={() => navigate({ to: "/quiz" })}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-primary/20 bg-background/50 px-6 py-4 font-bold text-foreground transition-all duration-300 hover:bg-accent hover:border-primary/40 active:scale-[0.99]"
           >
-            <BookOpen className="h-4 w-4" /> Antworten detailliert durchsehen
+            <BookOpen className="h-4 w-4 text-primary" /> Antworten detailliert prüfen
           </button>
 
           <button
@@ -93,9 +83,9 @@ function ResultsPage() {
               clearSession();
               navigate({ to: "/" });
             }}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4.5 font-bold text-primary-foreground shadow-xl shadow-primary/10 transition-all duration-300 hover:shadow-primary/20 hover:brightness-105 active:scale-[0.99]"
           >
-            <Home className="h-4 w-4" /> Zurück zur Übersicht
+            <Home className="h-4 w-4" /> Zurück zum Start
           </button>
         </div>
       </div>
