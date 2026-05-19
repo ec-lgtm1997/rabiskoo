@@ -72,8 +72,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Community Nurse – Prüfungs-Simulation" },
+      { title: "Community Nurse" },
       { name: "description", content: "Multiple-Choice-Prüfungssimulation für Community Nurse." },
+      { property: "og:title", content: "Community Nurse" },
+      { name: "twitter:title", content: "Community Nurse" },
+      { property: "og:description", content: "Multiple-Choice-Prüfungssimulation für Community Nurse." },
+      { name: "twitter:description", content: "Multiple-Choice-Prüfungssimulation für Community Nurse." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0cfe3f36-0625-4a4d-b7f7-5079276cf77a/id-preview-f957ec99--bf3597c1-c2f3-43ef-8089-35b1501e6e76.lovable.app-1779213175822.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0cfe3f36-0625-4a4d-b7f7-5079276cf77a/id-preview-f957ec99--bf3597c1-c2f3-43ef-8089-35b1501e6e76.lovable.app-1779213175822.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
