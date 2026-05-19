@@ -6,7 +6,7 @@ export type QuizSession = {
   answers: Record<string, string[]>; // questionId -> selected keys
   currentIndex: number;
   startedAt: number;
-  mode: { type: "block"; blockId: string } | { type: "count"; count: number };
+  mode: { type: "block"; blockId: string } | { type: "count"; count: number } | { type: "errors" }; // <-- "errors" hinzugefügt
   instantReview: boolean;
 };
 
@@ -37,13 +37,56 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// NEU: Ermittelt alle IDs von Fragen, die in der Historie jemals falsch beantwortet wurden
+export function getWrongQuestionIds(): string[] {
+  const history = getHistory();
+  const wrongIds = new Set<string>();
+
+  history.forEach((entry) => {
+    entry.session.questions.forEach((q) => {
+      const selected = entry.session.answers[q.id] ?? [];
+      const isCorrect =
+        q.correct.length === selected.length &&
+        q.correct.every((key) => selected.includes(key));
+      
+      if (!isCorrect) {
+        wrongIds.add(q.id); // Frage war falsch -> merken
+      }
+    });
+  });
+
+  // Wichtig: Wenn eine Frage in einer NEUEREN Session komplett richtig beantwortet wurde,
+  // nehmen wir sie wieder aus dem Fehler-Fokus heraus (optional, aber sehr motivierend)
+  history.forEach((entry) => {
+    entry.session.questions.forEach((q) => {
+      const selected = entry.session.answers[q.id] ?? [];
+      const isCorrect =
+        q.correct.length === selected.length &&
+        q.correct.every((key) => selected.includes(key));
+      
+      if (isCorrect && wrongIds.has(q.id)) {
+        // Wurde in einer anderen Session korrigiert -> aus Fehlerliste streichen
+        wrongIds.delete(q.id);
+      }
+    });
+  });
+
+  return Array.from(wrongIds);
+}
+
 export function startQuiz(mode: QuizSession["mode"], instantReview: boolean = false) {
   let pool: Question[];
+  
   if (mode.type === "block") {
     pool = QUESTIONS.filter((q) => q.block === mode.blockId);
+  } else if (mode.type === "errors") {
+    // NEU: Pool besteht ausschließlich aus den fälschlich beantworteten Fragen
+    const wrongIds = getWrongQuestionIds();
+    pool = shuffle(QUESTIONS.filter((q) => wrongIds.includes(q.id)));
   } else {
     pool = shuffle(QUESTIONS).slice(0, Math.min(mode.count, QUESTIONS.length));
   }
+  
   session = {
     questions: pool,
     answers: {},
@@ -55,7 +98,6 @@ export function startQuiz(mode: QuizSession["mode"], instantReview: boolean = fa
   emit();
 }
 
-// NEU: Lädt eine alte Session aus der Historie, um sie noch einmal anzuschauen
 export function loadPastSession(pastSession: QuizSession) {
   session = { ...pastSession, currentIndex: 0, instantReview: true };
   emit();
@@ -88,7 +130,6 @@ export function clearSession() {
   emit();
 }
 
-// NEU: Speichert das Ergebnis in die Historie (wird auf der Ergebnisseite aufgerufen)
 export function saveSessionToHistory(points: number) {
   if (!session) return;
 
@@ -99,6 +140,8 @@ export function saveSessionToHistory(points: number) {
   let modeText = "";
   if (session.mode.type === "block") {
     modeText = `Themenblock ${session.mode.blockId.replace("block", "")}`;
+  } else if (session.mode.type === "errors") {
+    modeText = `Fehler-Fokus (${session.questions.length} Fragen)`;
   } else {
     modeText = `Zufallsmix (${session.questions.length} Fragen)`;
   }
@@ -119,7 +162,6 @@ export function saveSessionToHistory(points: number) {
   localStorage.setItem("quiz_history", JSON.stringify(updatedHistory));
 }
 
-// NEU: Holt alle gespeicherten Verläufe ab
 export function getHistory(): HistoryEntry[] {
   try {
     const data = localStorage.getItem("quiz_history");
@@ -129,7 +171,6 @@ export function getHistory(): HistoryEntry[] {
   }
 }
 
-// NEU: Löscht die Historie bei Bedarf
 export function clearHistory() {
   localStorage.removeItem("quiz_history");
 }
