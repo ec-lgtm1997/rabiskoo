@@ -12,13 +12,29 @@ export const Route = createFileRoute("/setup")({
 
 function SetupPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/setup" }) as { blockId?: string; count?: string };
+  // Nutze ein Fallback-Objekt, falls keine Suchparameter übergeben wurden
+  const search = (useSearch({ from: "/setup" }) || {}) as { blockId?: string; count?: string };
   
-  // Neuer Zustand für die Modus-Auswahl (Lernmodus vs. Prüfungsmodus)
+  // Standardmäßig aktivieren wir das direkte Feedback (Lernmodus)
   const [instantReview, setInstantReview] = useState(true);
 
   const blockId = search.blockId;
   const count = search.count ? parseInt(search.count, 10) : undefined;
+
+  // Wenn überhaupt keine Konfiguration übergeben wurde, direkt zurück zur Startseite, um die Schleife zu verhindern
+  if (!blockId && !count) {
+    return (
+      <main className="mx-auto max-w-xl px-5 py-12 text-center">
+        <p className="text-muted-foreground">Keine Prüfungskonfiguration gefunden.</p>
+        <button
+          onClick={() => navigate({ to: "/" })}
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" /> Zurück zur Übersicht
+        </button>
+      </main>
+    );
+  }
 
   const block = BLOCKS.find((b) => b.id === blockId);
 
@@ -28,6 +44,7 @@ function SetupPage() {
     } else if (count) {
       startQuiz({ type: "count", count }, instantReview);
     }
+    // WICHTIG: Wir navigieren direkt zur Quiz-Komponente
     navigate({ to: "/quiz" });
   };
 
@@ -48,7 +65,7 @@ function SetupPage() {
             : `Du startest einen Zufallsmix mit ${count} Fragen.`}
         </p>
 
-        {/* NEU: Modus-Auswahl Box */}
+        {/* Modus-Auswahl Box */}
         <div className="mt-8 rounded-2xl border bg-accent/20 p-4 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
