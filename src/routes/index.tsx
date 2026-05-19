@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
-import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3 } from "lucide-react";
+import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, type HistoryEntry } from "@/lib/quizStore";
@@ -39,89 +39,90 @@ function Index() {
     }
   };
 
-  // Holt die letzten 7 Versuche für das Diagramm (chronologisch sortiert)
   const chartEntries = useMemo(() => {
     return [...history].slice(0, 7).reverse();
   }, [history]);
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-12">
-      <div className="text-center">
-        <h1 className="text-4xl font-display font-extrabold tracking-tight sm:text-5xl">
-          Community Nurse <span className="text-primary">Lernportal</span>
+    <main className="mx-auto max-w-2xl px-5 py-14 sm:py-20 antialiased">
+      {/* Edler, zentrierter Header mit dezentem Herz-Icon */}
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-medium tracking-wide border border-primary/10">
+          <Heart className="h-3 w-3 fill-current" /> Made with Love
+        </div>
+        <h1 className="text-4xl font-display font-extrabold tracking-tight sm:text-5xl bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+          Community Nurse <span className="text-primary font-black">Lernportal</span>
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Bereite dich optimal vor oder wirf einen Blick auf deine bisherigen Erfolge.
+        <p className="max-w-md mx-auto text-sm sm:text-base text-muted-foreground/90 font-medium leading-relaxed">
+          Deine persönliche Wohlfühl-Oase für eine stressfreie und erfolgreiche Prüfungsvorbereitung.
         </p>
       </div>
 
-      <Tabs defaultValue="portal" className="mt-10">
-        <TabsList className="grid w-full grid-cols-2 p-1 bg-accent/40 rounded-2xl h-12">
-          <TabsTrigger value="portal" className="rounded-xl font-semibold text-sm py-2">
-            <Layers className="h-4 w-4 mr-2" /> Lernportal
+      <Tabs defaultValue="portal" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
+        <TabsList className="grid w-full grid-cols-2 p-1.5 bg-secondary/50 border border-border/40 backdrop-blur-sm rounded-2xl h-14 shadow-inner">
+          <TabsTrigger value="portal" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
+            <Layers className="h-4 w-4 mr-2 text-primary" /> Lernportal
           </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-xl font-semibold text-sm py-2">
-            <Clock className="h-4 w-4 mr-2" /> Historie ({history.length})
+          <TabsTrigger value="history" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
+            <Clock className="h-4 w-4 mr-2 text-primary" /> Historie ({history.length})
           </TabsTrigger>
         </TabsList>
 
         {/* REITER 1: LERNPORTAL */}
-        <TabsContent value="portal" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
-          <section>
-            <h2 className="text-xl font-display font-bold flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-primary" /> Prüfungssimulation
-            </h2>
-            
-            <div className="mt-4 rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
-              <div className="flex items-center gap-2">
-                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Sparkles className="h-4 w-4" />
+        <TabsContent value="portal" className="mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
+          <section className="animate-in slide-in-from-bottom-4 duration-500">
+            <div className="rounded-[2.5rem] border border-border/40 bg-card p-6 shadow-xl shadow-foreground/[0.02] sm:p-10 relative overflow-hidden backdrop-blur-md">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="flex items-center gap-3">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
+                  <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg leading-tight">Individueller Fragenmix</h3>
-                  <p className="text-xs text-muted-foreground">Bestimme die Fragenanzahl komplett frei.</p>
+                  <h3 className="font-bold text-lg text-foreground tracking-tight">Individueller Fragenmix</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Stelle dir genau die Menge zusammen, die du gerade schaffst.</p>
                 </div>
               </div>
 
-              <div className="mt-6 text-center">
-                <span className="text-5xl font-display font-black tracking-tight text-primary">
+              <div className="mt-10 text-center">
+                <span className="text-6xl font-display font-black tracking-tighter bg-gradient-to-b from-primary to-primary/80 bg-clip-text text-transparent">
                   {questionCount}
                 </span>
-                <span className="ml-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Fragen
+                <span className="ml-2.5 text-xs font-bold text-muted-foreground/80 uppercase tracking-widest block sm:inline mt-1">
+                  Fragen ausgewählt
                 </span>
               </div>
 
-              <div className="mt-6 px-2">
+              <div className="mt-8 px-2">
                 <Slider
                   value={[questionCount]}
                   onValueChange={(val) => setQuestionCount(val[0])}
                   min={1}
                   max={100}
                   step={1}
-                  className="py-4"
+                  className="py-4 cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground font-medium px-1">
+                <div className="flex justify-between text-[11px] text-muted-foreground/70 font-semibold tracking-wide px-1">
                   <span>1 Frage</span>
                   <span>50 Fragen</span>
                   <span>100 Fragen</span>
                 </div>
               </div>
 
-              <div className="mt-8">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              <div className="mt-10">
+                <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-3.5 px-0.5">
                   Schnellauswahl
                 </p>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
                   {presetCounts.map((count) => (
                     <button
                       key={count}
                       type="button"
                       onClick={() => setQuestionCount(count)}
-                      className={`rounded-xl border py-2.5 text-sm font-bold transition-all ${
+                      className={`rounded-2xl border-2 py-3 text-sm font-extrabold transition-all duration-300 ${
                         questionCount === count
-                          ? "border-primary bg-primary text-primary-foreground shadow-sm scale-[1.03]"
-                          : "bg-background hover:bg-accent"
+                          ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.05]"
+                          : "border-border/50 bg-background/50 hover:bg-accent hover:border-border"
                       }`}
                     >
                       {count}
@@ -132,18 +133,19 @@ function Index() {
 
               <button
                 onClick={() => handleStartSimulation(questionCount)}
-                className="mt-8 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+                className="mt-10 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4.5 font-bold text-primary-foreground shadow-xl shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-primary/20 hover:brightness-105 active:translate-y-0 active:scale-[0.99]"
               >
-                Prüfung mit {questionCount} Fragen konfigurieren
+                Mix starten <ChevronRight className="h-4 w-4 stroke-[3]" />
               </button>
             </div>
           </section>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-display font-bold flex items-center gap-2">
+          {/* Themenblöcke */}
+          <section className="space-y-5 animate-in slide-in-from-bottom-6 duration-500">
+            <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1">
               <Layers className="h-5 w-5 text-primary" /> Themenblöcke lernen
             </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               {BLOCKS.map((block) => {
                 const displayId = block.id.replace("block", "");
                 return (
@@ -155,17 +157,17 @@ function Index() {
                         search: { blockId: block.id },
                       })
                     }
-                    className="group rounded-3xl border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md flex flex-col justify-between"
+                    className="group rounded-[2rem] border border-border/40 bg-card p-6 text-left shadow-lg shadow-foreground/[0.01] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/[0.02] flex flex-col justify-between min-h-[170px]"
                   >
-                    <div>
-                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <BookOpen className="h-5 w-5" />
+                    <div className="space-y-4">
+                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner transition-transform duration-300 group-hover:scale-110">
+                        <BookOpen className="h-4 w-4" />
                       </div>
-                      <h3 className="mt-4 font-semibold text-lg group-hover:text-primary transition-colors leading-snug">
+                      <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors leading-snug tracking-tight">
                         {block.title}
                       </h3>
                     </div>
-                    <p className="mt-4 text-xs font-semibold text-muted-foreground bg-accent/60 px-3 py-1 rounded-full self-start tracking-wide">
+                    <p className="mt-5 text-[10px] font-extrabold text-primary bg-primary/5 px-3 py-1.5 rounded-full self-start tracking-widest uppercase border border-primary/10">
                       Block {displayId}
                     </p>
                   </button>
@@ -175,16 +177,16 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 2: HISTORIE MIT REALEM TAILWIND-CSS DIAGRAMM */}
-        <TabsContent value="history" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
-          <div className="flex items-center justify-between mb-4">
+        {/* REITER 2: HISTORIE */}
+        <TabsContent value="history" className="mt-8 space-y-6 focus-visible:outline-none focus-visible:ring-0">
+          <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" /> Dein Verlauf
+              <Clock className="h-5 w-5 text-primary" /> Bisherige Versuche
             </h2>
             {history.length > 0 && (
               <button
                 onClick={handleClearHistory}
-                className="text-xs text-muted-foreground hover:text-red-600 inline-flex items-center gap-1.5 transition-colors"
+                className="text-xs font-bold text-muted-foreground/70 hover:text-red-500 inline-flex items-center gap-1.5 transition-colors duration-200"
               >
                 <Trash2 className="h-3.5 w-3.5" /> Verlauf leeren
               </button>
@@ -192,99 +194,101 @@ function Index() {
           </div>
 
           {history.length === 0 ? (
-            <div className="text-center rounded-3xl border border-dashed p-12 bg-card/40">
-              <Calendar className="h-10 w-10 text-muted-foreground mx-auto opacity-40 mb-3" />
-              <p className="font-medium text-muted-foreground">Noch keine Prüfungen absolviert.</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Sobald du einen Themenblock oder Mix abschließt, taucht er hier auf.
+            <div className="text-center rounded-[2rem] border border-dashed border-border/80 p-14 bg-card/30 backdrop-blur-sm">
+              <Calendar className="h-10 w-10 text-muted-foreground mx-auto opacity-30 mb-3.5" />
+              <p className="font-bold text-muted-foreground text-sm">Noch ein unbeschriebenes Blatt!</p>
+              <p className="text-xs text-muted-foreground/80 mt-1 max-w-xs mx-auto leading-relaxed">
+                Sobald du ein Quiz erfolgreich beendest, verewigen wir deine Ergebnisse hier für dich.
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              
-              {/* NEUES NATIVES DIAGRAMM: 100% PASSEND ZU DEINEM APP-DESIGN */}
-              <div className="rounded-3xl border bg-card p-6 shadow-sm">
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground mb-6">
-                  <BarChart3 className="h-4 w-4 text-primary" /> Lernkurve (Letzte 7 Versuche)
+            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+              {/* Ästhetische Diagramm-Card */}
+              <div className="rounded-[2rem] border border-border/40 bg-card p-6 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
+                <h3 className="text-xs font-bold flex items-center gap-2 text-muted-foreground/80 uppercase tracking-widest mb-8">
+                  <BarChart3 className="h-4 w-4 text-primary" /> Deine Lernkurve
                 </h3>
                 
-                {/* Das Diagramm-Skelett */}
-                <div className="flex h-40 items-end justify-between gap-2 border-b border-border pb-2 px-2">
+                <div className="relative h-44 border-b border-border/50 pb-2 px-4 flex items-end justify-between gap-1">
+                  {/* Horizontale Linien */}
+                  <div className="absolute inset-x-0 top-0 h-full flex flex-col justify-between pointer-events-none pb-2 px-1 opacity-20">
+                    <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">100%</div>
+                    <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">75%</div>
+                    <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">50%</div>
+                    <div className="w-full border-t border-dashed border-foreground text-[8px] font-bold tracking-wider text-muted-foreground pt-0.5">25%</div>
+                  </div>
+
+                  {/* Die eleganten runden Linienbalken */}
                   {chartEntries.map((entry) => {
-                    // Kürzt das Datum auf Tag und Monat (z.B. "19.05.")
                     const shortDate = entry.date.split(".")[0] + "." + entry.date.split(".")[1];
                     const isPassed = entry.percentage >= 60;
 
                     return (
-                      <div key={entry.id} className="flex flex-1 flex-col items-center group relative h-full justify-end">
-                        
-                        {/* Hover-Tooltip */}
-                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-20">
-                          <div className="bg-popover text-popover-foreground text-xs font-medium rounded-lg px-2.5 py-1.5 shadow-md border whitespace-nowrap text-center">
-                            <span className="font-bold block">{entry.percentage}%</span>
-                            <span className="text-[10px] text-muted-foreground">{entry.modeText}</span>
+                      <div key={entry.id} className="flex flex-1 flex-col items-center group relative h-full justify-end z-10">
+                        {/* Wunderschönes schwebendes Glasmorphismus-Popup */}
+                        <div className="absolute bottom-full mb-3.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-1">
+                          <div className="bg-background/95 backdrop-blur-md text-[11px] font-semibold rounded-2xl px-3 py-2.5 shadow-xl border border-border/60 text-center space-y-0.5">
+                            <span className="font-black text-sm block text-primary">{entry.percentage}%</span>
+                            <span className="text-[10px] text-muted-foreground block max-w-[120px] truncate">{entry.modeText}</span>
                           </div>
-                          <div className="w-1.5 h-1.5 bg-popover border-r border-b rotate-45 -mt-1" />
+                          <div className="w-2 h-2 bg-background border-r border-b border-border/60 rotate-45 -mt-1 shadow-sm" />
                         </div>
 
-                        {/* Prozent-Text über dem Balken */}
-                        <span className="text-[10px] font-bold text-muted-foreground mb-1">
+                        <span className="text-[9px] font-extrabold text-muted-foreground/60 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           {entry.percentage}%
                         </span>
 
-                        {/* Der eigentliche Balken */}
+                        {/* Schicker vollrunder Pillen-Balken */}
                         <div 
                           style={{ height: `${Math.max(8, entry.percentage)}%` }}
-                          className={`w-full max-w-[32px] rounded-t-lg transition-all duration-300 group-hover:brightness-95 group-hover:scale-x-105 ${
+                          className={`w-2 rounded-full transition-all duration-300 ease-out group-hover:scale-y-[1.03] group-hover:w-3 ${
                             isPassed 
-                              ? "bg-primary/20 border-t-4 border-primary" 
-                              : "bg-red-500/10 border-t-4 border-red-500"
+                              ? "bg-gradient-to-t from-primary/40 to-primary shadow-[0_4px_12px_rgba(var(--primary),0.2)]" 
+                              : "bg-gradient-to-t from-red-400/30 to-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.15)]"
                           }`}
                         />
                         
-                        {/* Datum unter dem Balken */}
-                        <span className="absolute top-full mt-2 text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
+                        <span className="absolute top-full mt-2.5 text-[10px] font-bold text-muted-foreground/60 tracking-tight">
                           {shortDate}
                         </span>
                       </div>
                     );
                   })}
                 </div>
-                {/* Zusätzlicher Abstandhalter für die absoluten Datums-Labels */}
                 <div className="h-4" />
               </div>
 
-              {/* Die Liste der Einträge */}
+              {/* Die Verlaufsliste */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
-                  Alle Einträge
+                <h3 className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                  Verlaufschronik
                 </h3>
                 {history.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-2xl border bg-card p-4 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-primary/30"
+                    className="rounded-2xl border border-border/40 bg-card p-4 shadow-sm flex items-center justify-between gap-4 transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                   >
                     <div className="space-y-1">
-                      <span className="inline-flex items-center text-sm font-bold text-foreground">
+                      <span className="inline-flex items-center text-sm font-bold text-foreground/90 tracking-tight">
                         {entry.modeText}
                       </span>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground/70">
                         <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {entry.date}
+                          <Calendar className="h-3 w-3 text-primary/60" /> {entry.date}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {entry.time} Uhr
+                          <Clock className="h-3 w-3 text-primary/60" /> {entry.time} Uhr
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <span className="block font-display font-black text-lg leading-tight">
+                      <div className="text-right space-y-0.5">
+                        <span className="block font-display font-black text-base text-foreground leading-none">
                           {entry.points} / {entry.maxPoints}
                         </span>
-                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                          entry.percentage >= 60 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          entry.percentage >= 60 ? "bg-green-50 text-green-700 border border-green-200/50" : "bg-red-50 text-red-700 border border-red-200/50"
                         }`}>
                           {entry.percentage}%
                         </span>
@@ -292,10 +296,9 @@ function Index() {
 
                       <button
                         onClick={() => handleReviewPastSession(entry.session)}
-                        title="Antworten ansehen"
-                        className="rounded-xl border bg-background p-2 text-muted-foreground hover:text-primary hover:bg-accent transition-all"
+                        className="rounded-xl border border-border/60 bg-background/50 p-2.5 text-muted-foreground/80 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4 stroke-[2.5]" />
                       </button>
                     </div>
                   </div>
