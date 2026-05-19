@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BLOCKS } from "@/data/questions";
 import { THEORY_DATA } from "@/data/theory";
-import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile, Search, X } from "lucide-react";
+import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRight, Trash2, BarChart3, Heart, AlertCircle, Smile, Search, X, ChevronDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
@@ -17,6 +17,7 @@ function Index() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedBlockId, setSelectedBlockId] = useState<string>("block1");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [expandedBlocks, setExpandedBlocks] = useState<Record<string, boolean>>({ block1: true });
   const presetCounts = [5, 10, 20, 30, 40, 50];
 
   useEffect(() => {
@@ -57,7 +58,40 @@ function Index() {
     return [...history].slice(0, 7).reverse();
   }, [history]);
 
-  // Intelligente, fehlertolerante globale Suche über alle Blöcke und Inhalte
+  // Funktion zum Umschalten der Block-Ausklappung
+  const toggleBlockExpand = (blockId: string) => {
+    setExpandedBlocks(prev => ({
+      ...prev,
+      [blockId]: !prev[blockId]
+    }));
+  };
+
+  // Extrahiert dynamisch alle Unterüberschriften eines Blocks für die Navigation
+  const getSubChapters = (content: string) => {
+    if (!content) return [];
+    return content.split("\n")
+      .map((line, idx) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("### ")) {
+          return { id: `heading-${idx}`, text: trimmed.replace("### ", ""), type: "main" };
+        }
+        if (trimmed.startsWith("#### ")) {
+          return { id: `heading-${idx}`, text: trimmed.replace("#### ", ""), type: "sub" };
+        }
+        return null;
+      })
+      .filter((item): item is { id: string; text: string; type: string } => item !== null);
+  };
+
+  // Scrollt sanft zur ausgewählten Überschrift auf der rechten Seite
+  const scrollToHeading = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // Intelligente, globale Suche über alle Blöcke und Inhalte
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
@@ -65,7 +99,6 @@ function Index() {
     const results: { blockId: string; title: string; type: 'title' | 'content'; snippet: string }[] = [];
 
     Object.values(THEORY_DATA).forEach((block) => {
-      // 1. Treffer im Titel prüfen
       if (block.title.toLowerCase().includes(query)) {
         results.push({
           blockId: block.id,
@@ -75,12 +108,10 @@ function Index() {
         });
       }
 
-      // 2. Zeilenweise Treffer im Inhalt prüfen mit Kontext-Auszug (Snippet)
       const lines = block.content.split("\n");
       lines.forEach((line) => {
         const cleanLine = line.replace(/[\*\#]/g, "").trim();
         if (cleanLine.toLowerCase().includes(query)) {
-          // Verhindert doppelte identische Snippets
           if (!results.some(r => r.snippet === cleanLine)) {
             results.push({
               blockId: block.id,
@@ -129,12 +160,12 @@ function Index() {
           </TabsTrigger>
         </TabsList>
 
-        {/* REITER 1: LERNBEREICH (MIT INTELLIGENTER SUCHE) */}
+        {/* REITER 1: LERNBEREICH */}
         <TabsContent value="lernen" className="mt-8 focus-visible:outline-none focus-visible:ring-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             
             {/* Linkes Menü: Suche & Inhaltsverzeichnis */}
-            <div className="md:col-span-1 space-y-4 md:sticky md:top-6">
+            <div className="md:col-span-1 space-y-4 md:sticky md:top-6 max-h-[80vh] overflow-y-auto pr-1 custom-scrollbar">
               
               {/* Das Intelligente Suchfeld */}
               <div className="bg-card p-4 rounded-[1.5rem] border border-border/40 shadow-sm relative">
@@ -142,7 +173,7 @@ function Index() {
                   <Search className="absolute left-3 h-4 w-4 text-muted-foreground/60" />
                   <input
                     type="text"
-                    placeholder="Skript intelligent durchsuchen..."
+                    placeholder="Suchen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-8 py-2 bg-secondary/40 border border-border/60 rounded-xl text-xs sm:text-sm font-medium placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -158,38 +189,91 @@ function Index() {
                 </div>
               </div>
 
-              {/* Dynamische Steuerung: Normales Verzeichnis vs. Suchergebnisse */}
-              <div className="bg-card p-4 rounded-[2rem] border border-border/40 shadow-sm space-y-1">
+              {/* Menü-Steuerung: Normales Verzeichnis vs. Suchergebnisse */}
+              <div className="bg-card p-4 rounded-[2rem] border border-border/40 shadow-sm space-y-2">
                 {searchQuery.trim() === "" ? (
                   <>
-                    <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-2 mb-3">
+                    <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-2 mb-1">
                       Themenübersicht
                     </p>
-                    {Object.values(THEORY_DATA).map((block) => (
-                      <button
-                        key={block.id}
-                        onClick={() => setSelectedBlockId(block.id)}
-                        className={`w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
-                          selectedBlockId === block.id
-                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/10 pl-4"
-                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-                        }`}
-                      >
-                        {block.title}
-                      </button>
-                    ))}
+                    <div className="space-y-2">
+                      {Object.values(THEORY_DATA).map((block) => {
+                        const isSelected = selectedBlockId === block.id;
+                        const isExpanded = !!expandedBlocks[block.id];
+                        const subChapters = getSubChapters(block.content);
+
+                        return (
+                          <div key={block.id} className="rounded-xl overflow-hidden transition-all">
+                            {/* Hauptblock-Button */}
+                            <div className="flex items-center justify-between w-full group">
+                              <button
+                                onClick={() => {
+                                  setSelectedBlockId(block.id);
+                                  if (!isExpanded) toggleBlockExpand(block.id);
+                                }}
+                                className={`flex-1 text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/10 pl-4"
+                                    : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                                }`}
+                              >
+                                {block.title}
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleBlockExpand(block.id);
+                                }}
+                                className={`p-2 rounded-xl text-muted-foreground/70 hover:bg-secondary/60 transition-transform duration-200 ${
+                                  isExpanded ? "rotate-180" : ""
+                                }`}
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            {/* Unterkapitel (Akkordeon) */}
+                            {isExpanded && subChapters.length > 0 && (
+                              <div className="mt-1.5 pl-3 border-l border-border/60 ml-4 space-y-1 py-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                {subChapters.map((sub) => (
+                                  <button
+                                    key={sub.id}
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        setSelectedBlockId(block.id);
+                                        // Kleiner Timeout, damit die rechte Seite erst rendert, bevor wir scrollen
+                                        setTimeout(() => scrollToHeading(sub.id), 50);
+                                      } else {
+                                        scrollToHeading(sub.id);
+                                      }
+                                    }}
+                                    className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold block truncate transition-colors ${
+                                      sub.type === "main" 
+                                        ? "text-foreground/80 hover:text-primary font-bold" 
+                                        : "text-muted-foreground/80 hover:text-primary pl-4"
+                                    }`}
+                                  >
+                                    {sub.text}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </>
                 ) : (
                   <>
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest px-2 mb-3 flex items-center justify-between">
-                      <span>Suchtreffer ({searchResults.length})</span>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest px-2 mb-3">
+                      Suchtreffer ({searchResults.length})
                     </p>
                     {searchResults.length === 0 ? (
                       <p className="text-xs text-muted-foreground p-3 text-center font-medium">
                         Keine genauen Textstellen gefunden.
                       </p>
                     ) : (
-                      <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                      <div className="space-y-2">
                         {searchResults.map((res, index) => (
                           <button
                             key={index}
@@ -216,7 +300,7 @@ function Index() {
             </div>
 
             {/* Rechte Anzeige: Strukturierter & Schön formulierter Lehrtext */}
-            <div className="md:col-span-2 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border/40 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
+            <div className="md:col-span-2 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border/40 shadow-xl shadow-foreground/[0.01] relative overflow-hidden max-h-[85vh] overflow-y-auto custom-scrollbar">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/[0.02] rounded-full blur-2xl pointer-events-none" />
               <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 border border-primary/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-primary mb-4">
                 Originaler Lehrtext
@@ -226,9 +310,8 @@ function Index() {
               </h2>
               
               {/* Intelligenter Parser für Überschriften, Listen und Inline-Fettung */}
-              <div className="space-y-6 text-foreground/90 text-sm sm:text-base leading-relaxed">
+              <div className="space-y-6 text-foreground/90 text-sm sm:text-base leading-relaxed下">
                 {(() => {
-                  // Textstellen-Highlighting-Funktion
                   const renderInlineMarkdown = (text: string) => {
                     if (!text) return "";
                     
@@ -239,7 +322,6 @@ function Index() {
                       const isBold = index % 2 === 1;
                       const query = searchQuery.trim().toLowerCase();
 
-                      // Wenn eine aktive Suche läuft, heben wir das gesuchte Wort farblich hervor
                       if (query && part.toLowerCase().includes(query)) {
                         const regex = new RegExp(`(${query})`, "gi");
                         const subParts = part.split(regex);
@@ -266,19 +348,19 @@ function Index() {
                     
                     if (!trimmed) return null;
                     
-                    // 1. Hauptüberschriften (###)
+                    // 1. Hauptüberschriften (###) - ID hinzugefügt für Anchor-Scroll
                     if (trimmed.startsWith("### ")) {
                       return (
-                        <h3 key={lineIdx} className="text-lg sm:text-xl font-display font-black text-primary tracking-tight pt-4 mt-6 border-l-4 border-primary pl-3">
+                        <h3 id={`heading-${lineIdx}`} key={lineIdx} className="text-lg sm:text-xl font-display font-black text-primary tracking-tight pt-4 mt-6 border-l-4 border-primary pl-3 scroll-mt-6">
                           {trimmed.replace("### ", "")}
                         </h3>
                       );
                     }
                     
-                    // 2. Zwischenüberschriften (####)
+                    // 2. Zwischenüberschriften (####) - ID hinzugefügt für Anchor-Scroll
                     if (trimmed.startsWith("#### ")) {
                       return (
-                        <h4 key={lineIdx} className="text-base font-bold text-foreground tracking-tight pt-2 mt-4">
+                        <h4 id={`heading-${lineIdx}`} key={lineIdx} className="text-base font-bold text-foreground tracking-tight pt-2 mt-4 scroll-mt-6">
                           {trimmed.replace("#### ", "")}
                         </h4>
                       );
@@ -344,7 +426,7 @@ function Index() {
           </div>
         </TabsContent>
 
-        {/* REITER 2: PRÜFUNGSPORTAL (Vorher Lernportal) */}
+        {/* REITER 2: PRÜFUNGSPORTAL */}
         <TabsContent value="portal" className="mx-auto max-w-2xl mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
           {/* Flexibler Fragenmix */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
