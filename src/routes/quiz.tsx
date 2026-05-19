@@ -13,7 +13,7 @@ function Quiz() {
   const session = useQuizSession();
   const navigate = useNavigate();
   
-  // Zustand für die Auflösung der aktuellen Frage
+  // Zustand für die Auflösung (wird nur genutzt, wenn instantReview aktiv ist)
   const [isReviewed, setIsReviewed] = useState(false);
 
   useEffect(() => {
@@ -27,10 +27,11 @@ function Quiz() {
   const selected = session.answers[q.id] ?? [];
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;
 
-  // Filtert alle Antwort-Objekte heraus, die laut q.correct richtig sind
+  // Bestimmt, ob die visuelle Auflösung JETZT gerade aktiv gezeigt werden soll
+  const showReview = session.instantReview && isReviewed;
+
   const correctAnswersList = q.answers.filter((a) => q.correct.includes(a.key));
 
-  // Punkteberechnung (1 Punkt wenn alles exakt stimmt, sonst 0)
   const calculatePointsForQuestion = () => {
     if (selected.length === 0) return 0;
     const isCorrect =
@@ -40,7 +41,7 @@ function Quiz() {
   };
 
   const toggle = (key: string) => {
-    if (isReviewed) return;
+    if (showReview) return; // Klicks sperren, wenn bereits aufgelöst
 
     if (isMulti) {
       const nextAnswers = selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key];
@@ -51,9 +52,11 @@ function Quiz() {
   };
 
   const handleNextClick = () => {
-    if (!isReviewed) {
+    if (session.instantReview && !isReviewed) {
+      // Modus "Direktes Feedback": Zeige zuerst die Auswertung
       setIsReviewed(true);
     } else {
+      // Prüfungsmodus ODER bereits ausgewertet: Gehe direkt weiter
       setIsReviewed(false);
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
@@ -87,7 +90,7 @@ function Quiz() {
             {isMulti ? "Mehrere Antworten möglich" : "Eine Antwort"}
           </div>
           
-          {isReviewed && (
+          {showReview && (
             <div className={`text-sm font-semibold px-3 py-1 rounded-full ${calculatePointsForQuestion() > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               Punkte: {calculatePointsForQuestion()} / 1
             </div>
@@ -104,7 +107,7 @@ function Quiz() {
             let borderClass = "border-border bg-background hover:border-primary/40 hover:bg-accent/20";
             let iconContainerClass = "border-border bg-background text-muted-foreground";
 
-            if (isReviewed) {
+            if (showReview) {
               if (isCorrectAnswer) {
                 borderClass = isSelected 
                   ? "border-green-500 bg-green-50/50" 
@@ -124,16 +127,16 @@ function Quiz() {
             return (
               <button
                 key={a.key}
-                disabled={isReviewed}
+                disabled={showReview}
                 onClick={() => toggle(a.key)}
                 className={`group flex items-start gap-4 rounded-2xl border-2 p-4 text-left transition-all ${
-                  !isReviewed && "active:scale-[0.99]"
+                  !showReview && "active:scale-[0.99]"
                 } ${borderClass}`}
               >
                 <div
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-${isMulti ? "lg" : "full"} border-2 font-display text-sm font-semibold transition-all ${iconContainerClass}`}
                 >
-                  {isReviewed ? (
+                  {showReview ? (
                     isCorrectAnswer ? <Check className="h-4 w-4" /> : isSelected ? <X className="h-4 w-4" /> : a.key
                   ) : isSelected ? (
                     <Check className="h-4 w-4" />
@@ -148,8 +151,7 @@ function Quiz() {
         </div>
       </article>
 
-      {/* Neue Info-Box für die richtige Lösung (wird nur nach dem Überprüfen angezeigt) */}
-      {isReviewed && (
+      {showReview && (
         <div className="animate-fade-up mt-4 rounded-2xl border border-blue-200 bg-blue-50/50 p-4 text-sm shadow-sm flex items-start gap-3">
           <Lightbulb className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="grid gap-1">
@@ -172,7 +174,7 @@ function Quiz() {
               setIsReviewed(false);
               goTo(session.currentIndex - 1);
             }}
-            disabled={session.currentIndex === 0 || isReviewed}
+            disabled={session.currentIndex === 0 || showReview}
             className="rounded-2xl border bg-card px-4 py-3 text-sm font-medium disabled:opacity-40"
           >
             Zurück
@@ -182,12 +184,14 @@ function Quiz() {
             disabled={selected.length === 0}
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-40 disabled:hover:translate-y-0"
           >
-            {!isReviewed ? (
-              <>Überprüfen <Check className="h-4 w-4" /></>
-            ) : session.currentIndex < session.questions.length - 1 ? (
-              <>Nächste Frage <ArrowRight className="h-4 w-4" /></>
+            {(!session.instantReview || isReviewed) ? (
+              session.currentIndex < session.questions.length - 1 ? (
+                <>Nächste Frage <ArrowRight className="h-4 w-4" /></>
+              ) : (
+                <>Ergebnis abgeben <Flag className="h-4 w-4" /></>
+              )
             ) : (
-              <>Ergebnis abgeben <Flag className="h-4 w-4" /></>
+              <>Überprüfen <Check className="h-4 w-4" /></>
             )}
           </button>
         </div>
