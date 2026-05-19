@@ -18,7 +18,7 @@ export const BLOCKS: Block[] = [
   { id: "block7", title: "Public Health & Pilotprojekt Community (Health) Nurse" },
 ];
 
-export const QUESTIONS: Question[] =   questions: [
+export const QUESTIONS: Question[] = [
     {
       id: "b1_f1",
       block: "block1",
