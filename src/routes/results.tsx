@@ -6,7 +6,7 @@ import { Check, X, ChevronDown, RotateCcw, Home } from "lucide-react";
 
 export const Route = createFileRoute("/results")({
   head: () => ({ meta: [{ title: "Ergebnis – Community Nurse" }] }),
-  component: Results;
+  component: Results,
 });
 
 function Results() {
