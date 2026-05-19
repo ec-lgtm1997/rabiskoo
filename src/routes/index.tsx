@@ -113,21 +113,101 @@ function Index() {
               ))}
             </div>
 
-            {/* Rechte Anzeige: Unveränderter Originaltext */}
-            <div className="md:col-span-2 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border/40 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/[0.02] rounded-full blur-2xl pointer-events-none" />
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 border border-primary/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-primary mb-4">
-                Originaler Lehrtext
-              </div>
-              <h2 className="text-xl sm:text-2xl font-display font-black tracking-tight text-foreground border-b pb-4 mb-6">
-                {currentBlockTheory?.title}
-              </h2>
-              
-              {/* Rendered den Originaltext unter Behalt aller Zeilenumbrüche, Tabellen und Listenstrukturen */}
-              <div className="text-sm sm:text-base text-foreground/90 whitespace-pre-line font-medium leading-relaxed space-y-4">
-                {currentBlockTheory?.content}
-              </div>
+{/* Rechte Anzeige: Strukturierter & Schön formulierter Lehrtext */}
+<div className="md:col-span-2 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border/40 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
+  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/[0.02] rounded-full blur-2xl pointer-events-none" />
+  <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 border border-primary/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-primary mb-4">
+    Originaler Lehrtext
+  </div>
+  <h2 className="text-xl sm:text-2xl font-display font-black tracking-tight text-foreground border-b pb-4 mb-6">
+    {currentBlockTheory?.title}
+  </h2>
+  
+  {/* Intelligenter Parser für Überschriften, Listen und Tabellen */}
+  <div className="space-y-6 text-foreground/90 text-sm sm:text-base leading-relaxed">
+    {currentBlockTheory?.content.split("\n").map((line) => {
+      const trimmed = line.trim();
+      
+      // 1. Hauptüberschriften (###)
+      if (trimmed.startsWith("### ")) {
+        return (
+          <h3 className="text-lg sm:text-xl font-display font-black text-primary tracking-tight pt-4 mt-6 border-l-4 border-primary pl-3">
+            {trimmed.replace("### ", "")}
+          </h3>
+        );
+      }
+      
+      // 2. Zwischenüberschriften (####)
+      if (trimmed.startsWith("#### ")) {
+        return (
+          <h4 className="text-base font-bold text-foreground tracking-tight pt-2 mt-4">
+            {trimmed.replace("#### ", "")}
+          </h4>
+        );
+      }
+
+      // 3. Unter-Zwischenüberschriften (##### oder ######)
+      if (trimmed.startsWith("##### ") || trimmed.startsWith("###### ")) {
+        return (
+          <h5 className="text-sm font-extrabold text-muted-foreground uppercase tracking-wider pt-2">
+            {trimmed.replace(/^#+\s/, "")}
+          </h5>
+        );
+      }
+      
+      // 4. Aufzählungspunkte (* oder -)
+      if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
+        const cleanText = trimmed.replace(/^[\*\-]\s/, "");
+        
+        // Checken, ob ein Begriff fett gedruckt ist am Anfang (z.B. * **Definition:** Text)
+        if (cleanText.startsWith("**")) {
+          const parts = cleanText.split("**");
+          return (
+            <div className="flex items-start gap-2.5 my-1.5 pl-4 transition-all hover:translate-x-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-2" />
+              <p className="text-muted-foreground">
+                <strong className="text-foreground font-bold">{parts[1]}</strong>
+                {parts.slice(2).join("**")}
+              </p>
             </div>
+          );
+        }
+        
+        return (
+          <div className="flex items-start gap-2.5 my-1.5 pl-4">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0 mt-2" />
+            <p className="text-muted-foreground">{cleanText}</p>
+          </div>
+        );
+      }
+
+      // 5. Trennlinien (---)
+      if (trimmed === "---") {
+        return <hr className="my-8 border-border/60" />;
+      }
+
+      // 6. Tabellen-Zeilen überspringen/formatieren (optional, falls vorhanden)
+      if (trimmed.startsWith("|")) {
+        // Ignoriert die Trennzeile | :--- |
+        if (trimmed.includes("---")) return null;
+        
+        const cells = trimmed.split("|").map(c => c.trim()).filter(Boolean);
+        return (
+          <div className="grid grid-cols-2 gap-4 bg-secondary/30 p-3 rounded-xl text-xs sm:text-sm font-medium border border-border/20 my-1">
+            <div className="text-muted-foreground">{cells[0]}</div>
+            <div className="font-bold text-foreground">{cells[1] || cells[2]}</div>
+          </div>
+        );
+      }
+      
+      // 7. Leere Zeilen ignorieren
+      if (!trimmed) return null;
+      
+      // 8. Normaler Fließtext
+      return <p className="text-muted-foreground/90 font-medium pl-1">{trimmed}</p>;
+    })}
+  </div>
+</div>
 
           </div>
         </TabsContent>
