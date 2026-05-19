@@ -6,14 +6,27 @@ import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
+// Definition der erlaubten Suchparameter für den Router
+type SetupSearchParams = {
+  blockId?: string;
+  count?: string;
+};
+
 export const Route = createFileRoute("/setup")({
+  // Dem Router mitteilen, wie die Suchparameter validiert werden sollen
+  validateSearch: (search: Record<string, unknown>): SetupSearchParams => {
+    return {
+      blockId: typeof search.blockId === "string" ? search.blockId : undefined,
+      count: typeof search.count === "string" ? search.count : undefined,
+    };
+  },
   component: SetupPage,
 });
 
 function SetupPage() {
   const navigate = useNavigate();
-  // Nutze ein Fallback-Objekt, falls keine Suchparameter übergeben wurden
-  const search = (useSearch({ from: "/setup" }) || {}) as { blockId?: string; count?: string };
+  // Holt die validierten Suchparameter direkt ab
+  const search = useSearch({ from: "/setup" });
   
   // Standardmäßig aktivieren wir das direkte Feedback (Lernmodus)
   const [instantReview, setInstantReview] = useState(true);
@@ -21,7 +34,7 @@ function SetupPage() {
   const blockId = search.blockId;
   const count = search.count ? parseInt(search.count, 10) : undefined;
 
-  // Wenn überhaupt keine Konfiguration übergeben wurde, direkt zurück zur Startseite, um die Schleife zu verhindern
+  // Wenn überhaupt keine Konfiguration übergeben wurde, direkt zurück zur Startseite
   if (!blockId && !count) {
     return (
       <main className="mx-auto max-w-xl px-5 py-12 text-center">
@@ -44,7 +57,6 @@ function SetupPage() {
     } else if (count) {
       startQuiz({ type: "count", count }, instantReview);
     }
-    // WICHTIG: Wir navigieren direkt zur Quiz-Komponente
     navigate({ to: "/quiz" });
   };
 
