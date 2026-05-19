@@ -34,8 +34,7 @@ function Index() {
 
   const handleStartErrorFocus = () => {
     if (wrongQuestionsCount === 0) return;
-    // Öffnet die Setup-Seite mit einem speziellen Suchparameter oder startet direkt
-    startQuiz({ type: "errors" }, true); // Fehler-Fokus startet im edlen Lernmodus (Feedback an)
+    startQuiz({ type: "errors" }, true); // Fehler-Fokus startet im Übungsmodus
     navigate({ to: "/quiz" });
   };
 
@@ -80,56 +79,10 @@ function Index() {
           </TabsTrigger>
         </TabsList>
 
-        {/* REITER 1: LERNPORTAL */}
+        {/* REITER 1: LERNPORTAL (Jetzt sauber getrennt) */}
         <TabsContent value="portal" className="mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
-          
-          {/* NEU: SEKTION - DER FEHLER-FOKUS */}
+          {/* Flexibler Fragenmix */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
-              <AlertCircle className="h-5 w-5 text-red-500" /> Gezieltes Fokus-Training
-            </h2>
-            
-            <div className={`rounded-[2.5rem] border p-6 sm:p-8 relative overflow-hidden transition-all duration-300 ${
-              wrongQuestionsCount > 0 
-                ? "bg-gradient-to-br from-red-500/[0.02] via-card to-card border-red-500/20 shadow-xl shadow-red-500/[0.01]" 
-                : "bg-card border-border/40 opacity-75 shadow-sm"
-            }`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5">
-                  <h3 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
-                    Meine Problemzonen trainieren
-                  </h3>
-                  <p className="text-xs text-muted-foreground font-medium max-w-sm leading-relaxed">
-                    Das System filtert automatisch alle Fragen heraus, die du in der Vergangenheit falsch beantwortet hast, und übt sie mit dir, bis sie sitzen.
-                  </p>
-                </div>
-                <div className={`h-14 w-14 shrink-0 rounded-2xl flex flex-col items-center justify-center font-display transition-transform duration-300 ${
-                  wrongQuestionsCount > 0 
-                    ? "bg-red-50 text-red-600 border border-red-200/50 shadow-sm scale-105 animate-pulse" 
-                    : "bg-secondary text-muted-foreground"
-                }`}>
-                  <span className="text-xl font-black leading-none">{wrongQuestionsCount}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5">Fragen</span>
-                </div>
-              </div>
-
-              {wrongQuestionsCount > 0 ? (
-                <button
-                  onClick={handleStartErrorFocus}
-                  className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 font-bold text-white shadow-xl shadow-red-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-red-500/20 hover:brightness-105 active:translate-y-0"
-                >
-                  Fehler-Fokus starten <ChevronRight className="h-4 w-4 stroke-[3]" />
-                </button>
-              ) : (
-                <div className="mt-6 p-4 rounded-2xl bg-green-50/50 border border-green-100 flex items-center gap-2.5 text-xs font-semibold text-green-700">
-                  <Smile className="h-4 w-4 shrink-0" /> Keine ungelösten Fehler vorhanden! Du machst das fantastisch.
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Prüfungssimulation */}
-          <section className="animate-in slide-in-from-bottom-5 duration-500">
             <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
               <GraduationCap className="h-5 w-5 text-primary" /> Flexibler Fragenmix
             </h2>
@@ -203,7 +156,7 @@ function Index() {
           </section>
 
           {/* Themenblöcke */}
-          <section className="space-y-5 animate-in slide-in-from-bottom-6 duration-500">
+          <section className="space-y-5 animate-in slide-in-from-bottom-5 duration-500">
             <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1">
               <Layers className="h-5 w-5 text-primary" /> Themenblöcke lernen
             </h2>
@@ -239,8 +192,8 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 2: HISTORIE */}
-        <TabsContent value="history" className="mt-8 space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        {/* REITER 2: HISTORIE (Hier sitzt jetzt alles zum Verlauf & Fokus) */}
+        <TabsContent value="history" className="mt-8 space-y-8 focus-visible:outline-none focus-visible:ring-0">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-display font-bold flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" /> Bisherige Versuche
@@ -264,7 +217,47 @@ function Index() {
               </p>
             </div>
           ) : (
-            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+              
+              {/* FEHLER-FOKUS JETZT IM HISTORIE-REITER */}
+              <div className={`rounded-[2.5rem] border p-6 sm:p-8 relative overflow-hidden transition-all duration-300 ${
+                wrongQuestionsCount > 0 
+                  ? "bg-gradient-to-br from-red-500/[0.02] via-card to-card border-red-500/20 shadow-xl shadow-red-500/[0.01]" 
+                  : "bg-card border-border/40 opacity-75 shadow-sm"
+              }`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <h3 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-red-500" /> Meine Problemzonen trainieren
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-medium max-w-sm leading-relaxed">
+                      Das System filtert automatisch alle Fragen heraus, die du in der Vergangenheit falsch beantwortet hast, und übt sie mit dir, bis sie sitzen.
+                    </p>
+                  </div>
+                  <div className={`h-14 w-14 shrink-0 rounded-2xl flex flex-col items-center justify-center font-display transition-transform duration-300 ${
+                    wrongQuestionsCount > 0 
+                      ? "bg-red-50 text-red-600 border border-red-200/50 shadow-sm scale-105 animate-pulse" 
+                      : "bg-secondary text-muted-foreground"
+                  }`}>
+                    <span className="text-xl font-black leading-none">{wrongQuestionsCount}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5">Fragen</span>
+                  </div>
+                </div>
+
+                {wrongQuestionsCount > 0 ? (
+                  <button
+                    onClick={handleStartErrorFocus}
+                    className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 font-bold text-white shadow-xl shadow-red-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-red-500/20 hover:brightness-105 active:translate-y-0"
+                  >
+                    Fehler-Fokus starten <ChevronRight className="h-4 w-4 stroke-[3]" />
+                  </button>
+                ) : (
+                  <div className="mt-6 p-4 rounded-2xl bg-green-50/50 border border-green-100 flex items-center gap-2.5 text-xs font-semibold text-green-700">
+                    <Smile className="h-4 w-4 shrink-0" /> Keine ungelösten Fehler vorhanden! Du machst das fantastisch.
+                  </div>
+                )}
+              </div>
+
               {/* Ästhetische Diagramm-Card */}
               <div className="rounded-[2rem] border border-border/40 bg-card p-6 shadow-xl shadow-foreground/[0.01] relative overflow-hidden">
                 <h3 className="text-xs font-bold flex items-center gap-2 text-muted-foreground/80 uppercase tracking-widest mb-8">
