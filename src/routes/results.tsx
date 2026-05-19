@@ -5,6 +5,7 @@ import { gradeFromPercent, isFullyCorrect, scoreQuestion } from "@/lib/grading";
 import { Check, X, ChevronDown, RotateCcw, Home } from "lucide-react";
 
 export const Route = createFileRoute("/results")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Ergebnis – Community Nurse" }] }),
   component: Results,
 });
