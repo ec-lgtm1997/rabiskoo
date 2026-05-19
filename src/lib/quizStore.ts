@@ -63,7 +63,10 @@ export function setAnswer(qid: string, selected: string[]) {
 
 export function goTo(index: number) {
   if (!session) return;
-  session.currentIndex = Math.max(0, Math.min(index, session.questions.length - 1));
+  session = {
+    ...session,
+    currentIndex: Math.max(0, Math.min(index, session.questions.length - 1)),
+  };
   emit();
 }
 
@@ -71,8 +74,14 @@ export function retryQuestion(qid: string) {
   if (!session) return;
   const idx = session.questions.findIndex((q) => q.id === qid);
   if (idx >= 0) {
-    delete session.answers[qid];
-    session.currentIndex = idx;
+    const updatedAnswers = { ...session.answers };
+    delete updatedAnswers[qid];
+    
+    session = {
+      ...session,
+      answers: updatedAnswers,
+      currentIndex: idx,
+    };
     emit();
   }
 }
