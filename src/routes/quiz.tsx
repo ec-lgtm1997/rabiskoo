@@ -54,17 +54,18 @@ function Quiz() {
     const uid = `${session.startedAt}:${q.id}`;
 
     if (session.instantReview && !isReviewed) {
-      registerAnswer(uid, fullyCorrect);
+      // Übungsmodus (Direktes Feedback): Toasts anzeigen (silent = false)
+      registerAnswer(uid, fullyCorrect, false);
       setIsReviewed(true);
     } else {
       if (!session.instantReview) {
-        registerAnswer(uid, fullyCorrect);
+        // Prüfungsmodus aktiv: Toasts komplett stummschalten (silent = true)
+        registerAnswer(uid, fullyCorrect, true);
       }
       setIsReviewed(false);
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
       } else {
-         
         navigate({ to: "/results" });
       }
     }
