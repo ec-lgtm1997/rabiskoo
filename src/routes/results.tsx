@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { clearSession, useQuizSession } from "@/lib/quizStore";
+import { clearSession, saveSessionToHistory, useQuizSession } from "@/lib/quizStore";
 import { useEffect } from "react";
 import { Award, BookOpen, Home, XCircle, Sparkles } from "lucide-react";
 
@@ -23,8 +23,17 @@ function ResultsPage() {
   }
 
   useEffect(() => {
-    if (!session) navigate({ to: "/" });
-  }, [session, navigate]);
+    if (!session) {
+      navigate({ to: "/" });
+      return;
+    }
+    // Session in Historie speichern (nur einmal pro Session)
+    const key = `quiz_saved_${session.startedAt}`;
+    if (!localStorage.getItem(key)) {
+      saveSessionToHistory(correctCount);
+      localStorage.setItem(key, "1");
+    }
+  }, [session, navigate, correctCount]);
 
   if (!session) return null;
 
