@@ -33,7 +33,7 @@ function Index() {
   const flamesCount = useMemo(() => {
     if (typeof window === "undefined") return 0;
     return getFlamesCount();
-  }, [history]);
+  }, [history, searchQuery, selectedBlockId]);
 
   const handleStartSimulation = (count: number) => {
     navigate({
