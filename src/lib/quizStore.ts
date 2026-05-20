@@ -6,7 +6,7 @@ export type QuizSession = {
   answers: Record<string, string[]>; // questionId -> selected keys
   currentIndex: number;
   startedAt: number;
-  mode: { type: "block"; blockId: string } | { type: "count"; count: number } | { type: "errors" }; // <-- "errors" hinzugefügt
+  mode: { type: "block"; blockId: string } | { type: "count"; count: number } | { type: "errors" };
   instantReview: boolean;
 };
 
@@ -37,7 +37,38 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// NEU: Ermittelt alle IDs von Fragen, die in der Historie jemals falsch beantwortet wurden
+// Hilfsfunktion zur exakten Punkteberechnung nach Variante A
+export function getQuestionMaxPoints(q: Question): number {
+  return q.correct.length > 1 ? 2 : 1;
+}
+
+export function calcQuestionPoints(q: Question, selected: string[]): number {
+  const maxPoints = getQuestionMaxPoints(q);
+  
+  if (maxPoints === 1) {
+    // Single Choice: Alles oder nichts
+    const isCorrect = q.correct.length === selected.length && q.correct.every((key) => selected.includes(key));
+    return isCorrect ? 1 : 0;
+  } else {
+    // Multiple Choice (Variante A): Jede Option wird als Teilentscheidung gewertet
+    let correctDecisions = 0;
+    
+    q.answers.forEach((a) => {
+      const shouldBeSelected = q.correct.includes(a.key);
+      const isCurrentlySelected = selected.includes(a.key);
+      
+      if (shouldBeSelected === isCurrentlySelected) {
+        correctDecisions++;
+      }
+    });
+
+    // Punkte = (Richtige Entscheidungen / Gesamtoptionen) * 2 MaxPoints
+    const rawPoints = (correctDecisions / q.answers.length) * 2;
+    // Runden auf 2 Nachkommastellen für saubere Darstellung
+    return Math.round(rawPoints * 100) / 100;
+  }
+}
+
 export function getWrongQuestionIds(): string[] {
   const history = getHistory();
   const wrongIds = new Set<string>();
@@ -45,28 +76,23 @@ export function getWrongQuestionIds(): string[] {
   history.forEach((entry) => {
     entry.session.questions.forEach((q) => {
       const selected = entry.session.answers[q.id] ?? [];
-      const isCorrect =
-        q.correct.length === selected.length &&
-        q.correct.every((key) => selected.includes(key));
+      const points = calcQuestionPoints(q, selected);
+      const maxPoints = getQuestionMaxPoints(q);
       
-      if (!isCorrect) {
-        wrongIds.add(q.id); // Frage war falsch -> merken
+      if (points < maxPoints) {
+        wrongIds.add(q.id); // Nicht die volle Punktzahl -> gilt als Fehler
       }
     });
   });
 
-  // Wichtig: Wenn eine Frage in einer NEUEREN Session komplett richtig beantwortet wurde,
-  // nehmen wir sie wieder aus dem Fehler-Fokus heraus (optional, aber sehr motivierend)
   history.forEach((entry) => {
     entry.session.questions.forEach((q) => {
       const selected = entry.session.answers[q.id] ?? [];
-      const isCorrect =
-        q.correct.length === selected.length &&
-        q.correct.every((key) => selected.includes(key));
+      const points = calcQuestionPoints(q, selected);
+      const maxPoints = getQuestionMaxPoints(q);
       
-      if (isCorrect && wrongIds.has(q.id)) {
-        // Wurde in einer anderen Session korrigiert -> aus Fehlerliste streichen
-        wrongIds.delete(q.id);
+      if (points === maxPoints && wrongIds.has(q.id)) {
+        wrongIds.delete(q.id); // In neuerer Session komplett fehlerfrei gelöst
       }
     });
   });
@@ -80,7 +106,6 @@ export function startQuiz(mode: QuizSession["mode"], instantReview: boolean = fa
   if (mode.type === "block") {
     pool = QUESTIONS.filter((q) => q.block === mode.blockId);
   } else if (mode.type === "errors") {
-    // NEU: Pool besteht ausschließlich aus den fälschlich beantworteten Fragen
     const wrongIds = getWrongQuestionIds();
     pool = shuffle(QUESTIONS.filter((q) => wrongIds.includes(q.id)));
   } else {
@@ -146,14 +171,17 @@ export function saveSessionToHistory(points: number) {
     modeText = `Zufallsmix (${session.questions.length} Fragen)`;
   }
 
+  // Berechne die echten maximal erreichbaren Punkte dieser Session
+  const totalMaxPoints = session.questions.reduce((sum, q) => sum + getQuestionMaxPoints(q), 0);
+
   const newEntry: HistoryEntry = {
     id: `${session.startedAt}-${Math.random()}`,
     date: dateStr,
     time: timeStr,
     modeText,
-    points,
-    maxPoints: session.questions.length,
-    percentage: Math.round((points / session.questions.length) * 100),
+    points: Math.round(points * 100) / 100,
+    maxPoints: totalMaxPoints,
+    percentage: Math.round((points / totalMaxPoints) * 100),
     session: { ...session },
   };
 
