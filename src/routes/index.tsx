@@ -444,8 +444,8 @@ function Index() {
             <div className="flex items-center justify-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
                 <span className="text-lg">🔥</span>
-                <span className="text-sm font-bold text-orange-600 tracking-tight">
-                  {flamesCount !== 1 ? "n" : ""} {flamesCount}
+                <span className="text-sm font-bold text-orange-600 dark:text-orange-400 animate-pulse">
+                  {flamesCount}🔥
                 </span>
               </div>
             </div>
