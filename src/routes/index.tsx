@@ -5,6 +5,7 @@ import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRigh
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
+import { getFlamesCount } from "@/lib/flameStreak";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
@@ -27,6 +28,11 @@ function Index() {
   // Holt die Anzahl der aktuell ungelösten fehlerhaften Fragen
   const wrongQuestionsCount = useMemo(() => {
     return getWrongQuestionIds().length;
+  }, [history]);
+
+  const flamesCount = useMemo(() => {
+    if (typeof window === "undefined") return 0;
+    return getFlamesCount();
   }, [history]);
 
   const handleStartSimulation = (count: number) => {
@@ -428,6 +434,16 @@ function Index() {
 
         {/* REITER 2: PRÜFUNGSPORTAL */}
         <TabsContent value="portal" className="mx-auto max-w-2xl mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
+          {flamesCount > 0 && (
+            <div className="flex items-center justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
+                <span className="text-lg">🔥</span>
+                <span className="text-sm font-bold text-orange-600 tracking-tight">
+                  {flamesCount} Flamme{flamesCount !== 1 ? "n" : ""} gesammelt
+                </span>
+              </div>
+            </div>
+          )}
           {/* Flexibler Fragenmix */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
