@@ -6,7 +6,7 @@ type StreakState = {
   streak: number;       // aktuelle Serie richtig hintereinander
   pendingIce: boolean;  // letzte Antwort war falsch (Vorwarnung)
   announced: boolean;   // wurde die "ab jetzt sammelst du Flammen"-Nachricht schon gezeigt?
-  highScore: number;    // NEU: Allzeit-Bestwert der Flammen
+  highScore: number;    // Allzeit-Bestwert der Flammen
 };
 
 const KEY = "flame_streak_v1";
@@ -48,7 +48,7 @@ export function getFlamesCount(): number {
   }
 }
 
-// NEU: Holt den Allzeit-Bestwert ab
+// Holt den Allzeit-Bestwert ab
 export function getFlamesHighScore(): number {
   if (typeof window === "undefined") return 0;
   try {
@@ -63,7 +63,7 @@ export function getFlamesHighScore(): number {
 
 const handled = new Set<string>();
 
-export function registerAnswer(questionUid: string, fullyCorrect: boolean) {
+export function registerAnswer(questionUid: string, fullyCorrect: boolean, silent: boolean = false) {
   if (handled.has(questionUid)) return;
   handled.add(questionUid);
 
@@ -76,19 +76,25 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean) {
     if (s.streak === 3 && !s.announced) {
       s.flames += 3;
       s.announced = true;
-      toast("Ab jetzt sammelst du Flammen Askim 🔥", {
-        description: "3x 🔥",
-        duration: 4000,
-      });
+      if (!silent) {
+        toast("Ab jetzt sammelst du Flammen Askim 🔥", {
+          description: "3x 🔥",
+          duration: 4000,
+        });
+      }
     } else if (s.streak === 3 && s.announced) {
       s.flames += 3;
-      toast("+3 🔥", { duration: 2000 });
+      if (!silent) {
+        toast("+3 🔥", { duration: 2000 });
+      }
     } else if (s.streak > 3) {
       s.flames += 1;
-      toast("+1 🔥", { duration: 1800 });
+      if (!silent) {
+        toast("+1 🔥", { duration: 1800 });
+      }
     }
 
-    // NEU: Prüfen und aktualisieren des Highscores
+    // Prüfen und aktualisieren des Highscores
     if (s.flames > s.highScore) {
       s.highScore = s.flames;
     }
@@ -98,17 +104,21 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean) {
       s.streak = 0;
       s.pendingIce = false;
       s.announced = false;
-      toast("❄️❄️ Serie verloren", {
-        description: "Die Flammen sind erloschen.",
-        duration: 2500,
-      });
+      if (!silent) {
+        toast("❄️❄️ Serie verloren", {
+          description: "Die Flammen sind erloschen.",
+          duration: 2500,
+        });
+      }
     } else {
       s.pendingIce = true;
       s.streak = 0;
-      toast("❄️ Vorsicht!", {
-        description: "Noch ein Fehler und die Flammen erlöschen.",
-        duration: 2500,
-      });
+      if (!silent) {
+        toast("❄️ Vorsicht!", {
+          description: "Noch ein Fehler und die Flammen erlöschen.",
+          duration: 2500,
+        });
+      }
     }
   }
 
