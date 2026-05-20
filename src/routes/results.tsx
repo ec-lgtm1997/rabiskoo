@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { clearSession, saveSessionToHistory, useQuizSession } from "@/lib/quizStore";
 import { useEffect } from "react";
-import { Award, BookOpen, Home, XCircle, Sparkles } from "lucide-react";
+import { Award, BookOpen, Home, XCircle } from "lucide-react";
+import { scoreQuestion } from "@/lib/grading";
 
 export const Route = createFileRoute("/results")({
   component: ResultsPage,
@@ -11,10 +12,21 @@ function ResultsPage() {
   const session = useQuizSession();
   const navigate = useNavigate();
 
-  let correctCount = 0;
+  // Initialisiere die Variablen für die punktebasierte Berechnung
+  let totalPoints = 0;
+  let earnedPoints = 0;
+  let correctCount = 0; // Beibehalten für Historie/Abwärtskompatibilität
+
   if (session) {
     session.questions.forEach((q) => {
       const selected = session.answers[q.id] ?? [];
+      
+      // Nutze die exakte Punkteberechnung aus grading.ts
+      const score = scoreQuestion(q, selected);
+      earnedPoints += score.points;
+      totalPoints += score.max;
+
+      // Zähle komplett richtige Fragen für die bestehende Logik
       const isCorrect =
         q.correct.length === selected.length &&
         q.correct.every((key) => selected.includes(key));
@@ -27,7 +39,6 @@ function ResultsPage() {
       navigate({ to: "/" });
       return;
     }
-    // Session in Historie speichern (nur einmal pro Session)
     const key = `quiz_saved_${session.startedAt}`;
     if (!localStorage.getItem(key)) {
       saveSessionToHistory(correctCount);
@@ -37,9 +48,19 @@ function ResultsPage() {
 
   if (!session) return null;
 
-  const totalQuestions = session.questions.length;
-  const percentage = Math.round((correctCount / totalQuestions) * 100);
-  const passed = percentage >= 60;
+  // Prozentzahl basierend auf den Punkten als Dezimalzahl (P)
+  const P = totalPoints > 0 ? earnedPoints / totalPoints : 0;
+  const percentageDisplay = Math.round(P * 100);
+
+  // Schulnotenberechnung: N = 1 + 5 * (1 - P)
+  const calculatedGrade = 1 + 5 * (1 - P);
+  
+  // Prüfen, ob die Note schlechter als 4,0 wäre
+  const showGrade = calculatedGrade <= 4.0;
+  // Note auf eine Nachkommastelle runden
+  const formattedGrade = (Math.round(calculatedGrade * 10) / 10).toFixed(1).replace(".", ",");
+
+  const passed = percentageDisplay >= 60;
 
   return (
     <main className="mx-auto max-w-xl px-5 py-14 sm:py-24 antialiased animate-in fade-in duration-500">
@@ -67,17 +88,33 @@ function ResultsPage() {
             : "Das war ein super Training. Nutze die Fehler-Anzeige, um beim nächsten Mal voll durchzustarten."}
         </p>
 
-        {/* Die Scoreboard-Kacheln im Soft-Look */}
+        {/* Die Scoreboard-Kacheln (Bezug auf echte Punkte) */}
         <div className="mt-10 grid grid-cols-2 gap-4 rounded-3xl bg-secondary/40 p-5 border shadow-inner">
           <div className="space-y-0.5">
-            <span className="block text-2xl sm:text-3xl font-black text-foreground tracking-tight">{correctCount} / {totalQuestions}</span>
-            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Richtige Antworten</span>
+            <span className="block text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+              {earnedPoints} / {totalPoints}
+            </span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Erreichte Punkte</span>
           </div>
           <div className="space-y-0.5 border-l border-border/60">
-            <span className="block text-2xl sm:text-3xl font-black text-primary tracking-tight">{percentage}%</span>
+            <span className="block text-2xl sm:text-3xl font-black text-primary tracking-tight">
+              {percentageDisplay}%
+            </span>
             <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Deine Quote</span>
           </div>
         </div>
+
+        {/* Zusätzliche Anzeige für die berechnete Schulnote darunter */}
+        {showGrade && (
+          <div className="mt-6 rounded-2xl bg-primary/5 border border-primary/10 p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-widest block mb-1">
+              Berechnete Schulnote
+            </span>
+            <span className="text-3xl font-display font-black text-primary">
+              Note {formattedGrade}
+            </span>
+          </div>
+        )}
 
         <div className="mt-10 space-y-3 relative z-10">
           <button
