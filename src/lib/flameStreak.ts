@@ -114,8 +114,8 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean, silen
       s.pendingIce = true;
       s.streak = 0;
       if (!silent) {
-        toast("❄️ Vorsicht!", {
-          description: "Noch ein Fehler und die Flammen erlöschen.",
+        toast("❄️ Flammen eingefroren", {
+          description: "Noch ein Fehler und die Flammen werden auf 0 gesetzt.",
           duration: 2500,
         });
       }
