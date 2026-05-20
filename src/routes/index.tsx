@@ -149,13 +149,13 @@ function Index() {
       {/* Edler Header */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-medium tracking-wide border border-primary/10">
-          <Heart className="h-3 w-3 fill-current" /> Premium Version for You
+          <Heart className="h-3 w-3 fill-current" /> Für die schönste Frau der Welt
         </div>
         <h1 className="text-4xl font-display font-extrabold tracking-tight sm:text-5xl bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
           Community Nurse <span className="text-primary font-black">Lernportal</span>
         </h1>
         <p className="max-w-md mx-auto text-sm sm:text-base text-muted-foreground/90 font-medium leading-relaxed">
-          Deine persönliche Wohlfühl-Oase für eine stressfreie und erfolgreiche Prüfungsvorbereitung.
+          Deine persönliche Lern- und Quiz App
         </p>
       </div>
 
@@ -605,7 +605,7 @@ function Index() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1.5">
                     <h3 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-red-500" /> Meine Problemzonen trainieren
+                      <AlertCircle className="h-5 w-5 text-red-500" /> Fehler trainieren
                     </h3>
                     <p className="text-xs text-muted-foreground font-medium max-w-sm leading-relaxed">
                       Das System filtert automatisch alle Fragen heraus, die du in der Vergangenheit falsch beantwortet hast, und übt sie mit dir, bis sie sitzen.
