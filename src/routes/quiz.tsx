@@ -48,9 +48,18 @@ function Quiz() {
   };
 
   const handleNextClick = () => {
+    const fullyCorrect =
+      q.correct.length === selected.length &&
+      q.correct.every((key) => selected.includes(key));
+    const uid = `${session.startedAt}:${q.id}`;
+
     if (session.instantReview && !isReviewed) {
+      registerAnswer(uid, fullyCorrect);
       setIsReviewed(true);
     } else {
+      if (!session.instantReview) {
+        registerAnswer(uid, fullyCorrect);
+      }
       setIsReviewed(false);
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
