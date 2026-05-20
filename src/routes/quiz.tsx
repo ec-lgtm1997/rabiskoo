@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { goTo, setAnswer, useQuizSession, completeQuiz } from "@/lib/quizStore";
+import { goTo, setAnswer, useQuizSession } from "@/lib/quizStore";
 import { ArrowLeft, ArrowRight, Check, Flag, Lightbulb, X, HelpCircle } from "lucide-react";
 
 export const Route = createFileRoute("/quiz")({
@@ -54,7 +54,7 @@ function Quiz() {
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
       } else {
-        completeQuiz(); 
+         
         navigate({ to: "/results" });
       }
     }
