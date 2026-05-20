@@ -5,6 +5,7 @@ import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRigh
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
+import { getFlamesCount } from "@/lib/flameStreak";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
