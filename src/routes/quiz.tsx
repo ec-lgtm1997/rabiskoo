@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { goTo, setAnswer, useQuizSession } from "@/lib/quizStore";
+import { goTo, setAnswer, useQuizSession, calcQuestionPoints, getQuestionMaxPoints } from "@/lib/quizStore";
 import { ArrowLeft, ArrowRight, Check, Flag, Lightbulb, X, HelpCircle } from "lucide-react";
 import { registerAnswer } from "@/lib/flameStreak";
 
@@ -28,13 +28,8 @@ function Quiz() {
   const showReview = session.instantReview && isReviewed;
   const correctAnswersList = q.answers.filter((a) => q.correct.includes(a.key));
 
-  const calculatePointsForQuestion = () => {
-    if (selected.length === 0) return 0;
-    const isCorrect =
-      q.correct.length === selected.length &&
-      q.correct.every((key) => selected.includes(key));
-    return isCorrect ? 1 : 0;
-  };
+  const currentPoints = calcQuestionPoints(q, selected);
+  const maxPoints = getQuestionMaxPoints(q);
 
   const toggle = (key: string) => {
     if (showReview) return;
@@ -48,18 +43,15 @@ function Quiz() {
   };
 
   const handleNextClick = () => {
-    const fullyCorrect =
-      q.correct.length === selected.length &&
-      q.correct.every((key) => selected.includes(key));
+    // Flammen-Zählung: Für eine Serie zählen nur vollkommen fehlerfreie Fragen
+    const fullyCorrect = currentPoints === maxPoints;
     const uid = `${session.startedAt}:${q.id}`;
 
     if (session.instantReview && !isReviewed) {
-      // Übungsmodus (Direktes Feedback): Toasts anzeigen (silent = false)
       registerAnswer(uid, fullyCorrect, false);
       setIsReviewed(true);
     } else {
       if (!session.instantReview) {
-        // Prüfungsmodus aktiv: Toasts komplett stummschalten (silent = true)
         registerAnswer(uid, fullyCorrect, true);
       }
       setIsReviewed(false);
@@ -82,7 +74,6 @@ function Quiz() {
         </div>
       </div>
 
-      {/* Sanfter, feiner Fortschrittsbalken */}
       <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-secondary shadow-inner">
         <div
           className="h-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-500 rounded-full"
@@ -93,16 +84,18 @@ function Quiz() {
       <article key={q.id} className="animate-in slide-in-from-bottom-4 duration-500 mt-8 rounded-[2.5rem] border border-border/40 bg-card p-6 shadow-xl shadow-foreground/[0.01] sm:p-10 relative">
         <div className="flex items-center justify-between flex-wrap gap-3 border-b border-border/40 pb-5">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 border border-primary/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-primary">
-            <HelpCircle className="h-3.5 w-3.5" /> {isMulti ? "Mehrfachauswahl" : "Einfachauswahl"}
+            <HelpCircle className="h-3.5 w-3.5" /> {isMulti ? `Mehrfachauswahl (${maxPoints} P.)` : `Einfachauswahl (${maxPoints} P.)`}
           </div>
           
           {showReview && (
             <div className={`text-xs font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full border ${
-              calculatePointsForQuestion() > 0 
+              currentPoints === maxPoints 
                 ? 'bg-green-50 text-green-700 border-green-200' 
+                : currentPoints > 0
+                ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
                 : 'bg-red-50 text-red-700 border-red-200'
             }`}>
-              Ergebnis: +{calculatePointsForQuestion()} {calculatePointsForQuestion() === 1 ? "Punkt" : "Punkte"}
+              Ergebnis: +{currentPoints} / {maxPoints} {maxPoints === 1 ? "Punkt" : "Punkte"}
             </div>
           )}
         </div>
@@ -161,7 +154,6 @@ function Quiz() {
         </div>
       </article>
 
-      {/* Edle Info-Box */}
       {showReview && (
         <div className="animate-in slide-in-from-bottom-2 duration-400 mt-4 rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-50/40 to-blue-50/80 p-5 text-sm shadow-sm flex items-start gap-3.5 backdrop-blur-sm">
           <div className="h-8 w-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0 shadow-inner">
@@ -181,7 +173,6 @@ function Quiz() {
         </div>
       )}
 
-      {/* Schwebende Bottom-Leiste mit Milchglas-Optik */}
       <div className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-border/40 bg-background/70 px-5 py-4 backdrop-blur-lg shadow-2xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <button
