@@ -442,9 +442,8 @@ function Index() {
         <TabsContent value="portal" className="mx-auto max-w-2xl mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
           {flamesCount > 0 && (
             <div className="flex items-center justify-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
-                <span className="text-lg">🔥</span>
-                <span className="text-sm font-bold text-orange-600 dark:text-orange-400 animate-pulse">
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
+                <span className="text-lg font-black text-orange-600 tracking-tight">
                   {flamesCount}🔥
                 </span>
               </div>
