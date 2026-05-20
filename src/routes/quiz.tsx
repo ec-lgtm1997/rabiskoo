@@ -54,7 +54,7 @@ function Quiz() {
       if (session.currentIndex < session.questions.length - 1) {
         goTo(session.currentIndex + 1);
       } else {
-        completeQuiz(); 
+         
         navigate({ to: "/results" });
       }
     }
