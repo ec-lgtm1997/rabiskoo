@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { goTo, setAnswer, useQuizSession } from "@/lib/quizStore";
 import { ArrowLeft, ArrowRight, Check, Flag, Lightbulb, X, HelpCircle } from "lucide-react";
+import { registerAnswer } from "@/lib/flameStreak";
 
 export const Route = createFileRoute("/quiz")({
   ssr: false,
