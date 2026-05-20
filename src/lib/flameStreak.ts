@@ -35,6 +35,18 @@ function save(s: StreakState) {
 }
 
 // Schutz gegen Doppel-Trigger bei React-StrictMode etc.
+export function getFlamesCount(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    return parsed.flames ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 const handled = new Set<string>();
 
 export function registerAnswer(questionUid: string, fullyCorrect: boolean) {
