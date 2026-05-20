@@ -5,7 +5,7 @@ import { BookOpen, GraduationCap, Layers, Sparkles, Clock, Calendar, ChevronRigh
 import { useState, useEffect, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { getHistory, loadPastSession, clearHistory, getWrongQuestionIds, startQuiz, type HistoryEntry } from "@/lib/quizStore";
-import { getFlamesCount } from "@/lib/flameStreak";
+import { getFlamesCount, getFlamesHighScore } from "@/lib/flameStreak";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
@@ -33,6 +33,12 @@ function Index() {
   const flamesCount = useMemo(() => {
     if (typeof window === "undefined") return 0;
     return getFlamesCount();
+  }, [history, searchQuery, selectedBlockId]);
+  
+  // NEU HINZUFÜGEN:
+  const flamesHighScore = useMemo(() => {
+    if (typeof window === "undefined") return 0;
+    return getFlamesHighScore();
   }, [history, searchQuery, selectedBlockId]);
 
   const handleStartSimulation = (count: number) => {
@@ -555,21 +561,31 @@ function Index() {
           </section>
         </TabsContent>
 
-        {/* REITER 3: HISTORIE */}
-        <TabsContent value="history" className="mx-auto max-w-2xl mt-8 space-y-8 focus-visible:outline-none focus-visible:ring-0">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-xl font-display font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" /> Bisherige Versuche
-            </h2>
-            {history.length > 0 && (
-              <button
-                onClick={handleClearHistory}
-                className="text-xs font-bold text-muted-foreground/70 hover:text-red-500 inline-flex items-center gap-1.5 transition-colors duration-200"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Verlauf leeren
-              </button>
-            )}
-          </div>
+  {/* REITER 3: HISTORIE */}
+  <TabsContent value="history" className="mx-auto max-w-2xl mt-8 space-y-8 focus-visible:outline-none focus-visible:ring-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+      <div className="space-y-1">
+        <h2 className="text-xl font-display font-bold flex items-center gap-2">
+          <Clock className="h-5 w-5 text-primary" /> Bisherige Versuche
+        </h2>
+        {flamesHighScore > 0 && (
+          <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+            <span>🏆 Persönlicher Flammen-Rekord:</span>
+            <span className="font-bold text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">
+              {flamesHighScore} 🔥
+            </span>
+          </p>
+        )}
+      </div>
+      {history.length > 0 && (
+        <button
+          onClick={handleClearHistory}
+          className="text-xs font-bold text-muted-foreground/70 hover:text-red-500 inline-flex items-center gap-1.5 transition-colors duration-200 self-start sm:self-center"
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Verlauf leeren
+        </button>
+      )}
+    </div>
 
           {history.length === 0 ? (
             <div className="text-center rounded-[2rem] border border-dashed border-border/80 p-14 bg-card/30 backdrop-blur-sm">
