@@ -30,6 +30,11 @@ function Index() {
     return getWrongQuestionIds().length;
   }, [history]);
 
+  const flamesCount = useMemo(() => {
+    if (typeof window === "undefined") return 0;
+    return getFlamesCount();
+  }, [history]);
+
   const handleStartSimulation = (count: number) => {
     navigate({
       to: "/setup",
