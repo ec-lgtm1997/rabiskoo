@@ -159,7 +159,7 @@ function Index() {
         </p>
       </div>
 
-      <Tabs defaultValue="lernen" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
+      <Tabs defaultValue="portal" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
         <TabsList className="grid w-full grid-cols-3 p-1.5 bg-secondary/50 border border-border/40 backdrop-blur-sm rounded-2xl h-14 shadow-inner">
           <TabsTrigger value="lernen" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
             <BookOpen className="h-4 w-4 mr-2 text-primary" /> Lernbereich
