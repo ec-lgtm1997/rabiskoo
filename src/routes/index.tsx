@@ -440,15 +440,35 @@ function Index() {
 
         {/* REITER 2: PRÜFUNGSPORTAL */}
         <TabsContent value="portal" className="mx-auto max-w-2xl mt-8 space-y-12 focus-visible:outline-none focus-visible:ring-0">
-          {flamesCount > 0 && (
-            <div className="flex items-center justify-center">
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
-                <span className="text-lg font-black text-orange-600 tracking-tight">
-                  {flamesCount}🔥
-                </span>
+          {/* Flammen-Erklärung & Belohnung */}
+          <div className="rounded-3xl border border-orange-500/20 bg-gradient-to-br from-orange-500/[0.06] via-amber-500/[0.04] to-rose-500/[0.06] p-5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl leading-none mt-0.5">🔥</div>
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-orange-700">
+                    Flammen-System
+                  </h3>
+                  {flamesCount > 0 && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-700 text-sm font-black">
+                      {flamesCount} 🔥
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground/90 font-medium leading-relaxed">
+                  3 Fragen in Folge richtig → du startest Flammen zu sammeln. Jede weitere richtige Frage = <span className="font-bold text-orange-600">+1 🔥</span>. Ein Fehler friert die Flammen ein (❄️), zwei Fehler in Folge löschen alle Flammen.
+                </p>
+                <div className="mt-2 rounded-2xl border border-rose-400/30 bg-gradient-to-r from-rose-500/10 to-pink-500/10 p-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-700 mb-1">
+                    <span>🎁</span> Belohnung ab 50 🔥
+                  </div>
+                  <p className="text-xs sm:text-sm font-bold text-rose-700/90 leading-snug">
+                    „Emin wird von Rabia geschminkt. Askim, dann darfst du mich schminken wie du willst." 💄💋
+                  </p>
+                </div>
               </div>
             </div>
-          )}
+          </div>
           {/* Flexibler Fragenmix */}
           <section className="animate-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-xl font-display font-bold flex items-center gap-2 px-1 mb-4">
