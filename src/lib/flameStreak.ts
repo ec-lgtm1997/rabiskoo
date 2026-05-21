@@ -104,12 +104,6 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean, silen
     if (flamesBefore < 50 && s.flames >= 50 && typeof window !== "undefined" && !silent) {
       window.dispatchEvent(new CustomEvent("flame-milestone-50"));
     }
-  }
-
-    // Prüfen und aktualisieren des Highscores
-    if (s.flames > s.highScore) {
-      s.highScore = s.flames;
-    }
   } else {
     if (s.pendingIce) {
       s.flames = 0;
