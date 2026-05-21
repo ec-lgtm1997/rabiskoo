@@ -68,6 +68,7 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean, silen
   handled.add(questionUid);
 
   const s = load();
+  const flamesBefore = s.flames;
 
   if (fullyCorrect) {
     s.streak += 1;
@@ -93,6 +94,17 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean, silen
         toast("+1 🔥", { duration: 1800 });
       }
     }
+
+    // Prüfen und aktualisieren des Highscores
+    if (s.flames > s.highScore) {
+      s.highScore = s.flames;
+    }
+
+    // 50-Flammen-Meilenstein: Belohnung einmal pro Überschreitung auslösen
+    if (flamesBefore < 50 && s.flames >= 50 && typeof window !== "undefined" && !silent) {
+      window.dispatchEvent(new CustomEvent("flame-milestone-50"));
+    }
+  }
 
     // Prüfen und aktualisieren des Highscores
     if (s.flames > s.highScore) {
