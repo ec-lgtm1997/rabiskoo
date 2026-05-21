@@ -159,7 +159,7 @@ function Index() {
         </p>
       </div>
 
-      <Tabs defaultValue="lernen" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
+      <Tabs defaultValue="portal" className="mt-12 sm:mt-16 animate-in fade-in duration-500">
         <TabsList className="grid w-full grid-cols-3 p-1.5 bg-secondary/50 border border-border/40 backdrop-blur-sm rounded-2xl h-14 shadow-inner">
           <TabsTrigger value="lernen" className="rounded-xl font-bold text-sm py-2.5 transition-all data-[state=active]:shadow-md">
             <BookOpen className="h-4 w-4 mr-2 text-primary" /> Lernbereich
@@ -671,13 +671,21 @@ function Index() {
 
                   {chartEntries.map((entry) => {
                     const shortDate = entry.date.split(".")[0] + "." + entry.date.split(".")[1];
-                    const isPassed = entry.percentage >= 60;
+                    const p = entry.percentage;
+                    // Smooth hue gradient: 0% red (0°) → 40% orange (30°) → 60% yellow-green (75°) → 70% light green (110°) → 100% deep green (145°)
+                    let hue: number, sat: number, light: number;
+                    if (p < 40) { hue = 0 + (p / 40) * 30; sat = 80; light = 55; }
+                    else if (p < 60) { hue = 30 + ((p - 40) / 20) * 45; sat = 78; light = 52; }
+                    else if (p < 70) { hue = 75 + ((p - 60) / 10) * 35; sat = 70; light = 48; }
+                    else { hue = 110 + ((p - 70) / 30) * 35; sat = 65; light = 38; }
+                    const colorTop = `hsl(${hue}, ${sat}%, ${light}%)`;
+                    const colorBottom = `hsl(${hue}, ${sat}%, ${Math.min(light + 18, 80)}%)`;
 
                     return (
                       <div key={entry.id} className="flex flex-1 flex-col items-center group relative h-full justify-end z-10">
                         <div className="absolute bottom-full mb-3.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-1">
                           <div className="bg-background/95 backdrop-blur-md text-[11px] font-semibold rounded-2xl px-3 py-2.5 shadow-xl border border-border/60 text-center space-y-0.5">
-                            <span className="font-black text-sm block text-primary">{entry.percentage}%</span>
+                            <span className="font-black text-sm block" style={{ color: colorTop }}>{entry.percentage}%</span>
                             <span className="text-[10px] text-muted-foreground block max-w-[120px] truncate">{entry.modeText}</span>
                           </div>
                           <div className="w-2 h-2 bg-background border-r border-b border-border/60 rotate-45 -mt-1 shadow-sm" />
@@ -687,15 +695,15 @@ function Index() {
                           {entry.percentage}%
                         </span>
 
-                        <div 
-                          style={{ height: `${Math.max(8, entry.percentage)}%` }}
-                          className={`w-2 rounded-full transition-all duration-300 ease-out group-hover:scale-y-[1.03] group-hover:w-3 ${
-                            isPassed 
-                              ? "bg-gradient-to-t from-primary/40 to-primary shadow-[0_4px_12px_rgba(var(--primary),0.2)]" 
-                              : "bg-gradient-to-t from-red-400/30 to-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.15)]"
-                          }`}
+                        <div
+                          style={{
+                            height: `${Math.max(8, entry.percentage)}%`,
+                            background: `linear-gradient(to top, ${colorBottom}, ${colorTop})`,
+                            boxShadow: `0 4px 12px ${colorTop}33`,
+                          }}
+                          className="w-2 rounded-full transition-all duration-300 ease-out group-hover:scale-y-[1.03] group-hover:w-3"
                         />
-                        
+
                         <span className="absolute top-full mt-2.5 text-[10px] font-bold text-muted-foreground/60 tracking-tight">
                           {shortDate}
                         </span>
