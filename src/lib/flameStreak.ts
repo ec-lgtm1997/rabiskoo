@@ -121,7 +121,7 @@ export function registerAnswer(questionUid: string, fullyCorrect: boolean, silen
       s.streak = 0;
       if (!silent) {
         toast("❄️ Flammen eingefroren", {
-          description: "Noch ein Fehler und die Flammen werden auf 0 gesetzt.",
+          description: "",
           duration: 2500,
         });
       }
