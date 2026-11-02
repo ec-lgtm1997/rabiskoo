@@ -824,6 +824,11 @@ return PolylineOffset;
   .ok { color:#1e7b34; font-size:12px; }
   .pneu { padding:6px 12px; display:grid; gap:4px; justify-items:start; }
   .warn { color:#b45309; }
+  .pschalter { display:flex; align-items:center; gap:8px; padding:2px 12px 6px; font-size:12px; }
+  .proj-label span { display:inline-block; transform:translate(-50%, -170%); white-space:nowrap; background:#fff; color:#1f2933;
+                     border:1px solid rgba(0,0,0,.25); border-left:5px solid var(--c); padding:2px 7px; font:600 12px "Segoe UI", Arial, sans-serif;
+                     box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:pointer; }
+  .proj-label span:hover { background:#f3f5f8; }
   .proj-hinweis { margin-top:6px; font-size:12px; }
   .proj-hinweis span { display:inline-flex; align-items:center; gap:4px; margin-right:6px; }
   .proj-hinweis i { width:10px; height:10px; display:inline-block; border:1px solid rgba(0,0,0,.3); }
@@ -1772,6 +1777,23 @@ function projZeichnen() {
           .bindTooltip(tip, { direction: "top" }).bindPopup(pop(o), { maxWidth: 460 }).addTo(projLyr);
       }
     });
+    if (S.projLabels !== false) projBeschriften(p);
+  });
+}
+// Projektname auf der Karte: Objekte, die weiter als 15 km auseinanderliegen, bekommen je ein eigenes Schild
+function projBeschriften(p) {
+  const punkte = p.objekte.map(k => INDEX.get(k)).filter(Boolean)
+    .map(o => o.art === "abschnitt" ? L.geoJSON(o.f).getBounds().getCenter() : L.latLng(o.latlng));
+  const gruppen = [];
+  punkte.forEach(pt => {
+    const g = gruppen.find(g => g.mitte.distanceTo(pt) < 15000);
+    if (g) { g.pts.push(pt); g.mitte = L.latLngBounds(g.pts).getCenter(); } else gruppen.push({ pts: [pt], mitte: pt });
+  });
+  gruppen.forEach(g => {
+    L.marker(g.mitte, { pane: "projP", icon: L.divIcon({ className: "proj-label", html: `<span style="--c:${p.farbe}">${esc(p.name)}</span>`, iconSize: null }) })
+      .bindTooltip(`${esc(kundeName(p.kunde))} · ${esc(p.art)} · ${esc(p.status)}`, { direction: "bottom", offset: [0, 6] })
+      .on("click", () => { const b = L.latLngBounds(g.pts); map.fitBounds(b.pad(0.3), { maxZoom: 16 }); })
+      .addTo(projLyr);
   });
 }
 
@@ -1831,6 +1853,7 @@ function projUIBauen() {
     <div class="pkunde"><select id="pKunde"><option value="">– alle Netzkunden –</option>
       ${kunden.map(k => `<option value="${k.id}" ${k.id === projUI.kunde ? "selected" : ""}>${esc(k.name)} (${P.projekte.filter(p => p.kunde === k.id).length})</option>`).join("")}</select>
       <button id="pKundeNeu">+ Netzkunde</button></div>
+    <label class="pschalter"><input type="checkbox" id="pLabels" ${S.projLabels !== false ? "checked" : ""}> Projektnamen auf der Karte anzeigen</label>
     ${projUI.kundeNeu ? `<div class="pkunde"><input id="pKundeName" list="pFremdNamen" placeholder="Name, z. B. DB Energie GmbH"><button id="pKundeOk" class="prim">Anlegen</button></div>
       <datalist id="pFremdNamen">${fremdNamen.map(n => `<option value="${esc(n)}">`).join("")}</datalist>` : ""}
     <div id="pListe">${liste.length ? liste.map(projKarte).join("") : `<div class="leer">Keine Projekte${projUI.kunde ? " für diesen Netzkunden" : ""}.</div>`}</div>
@@ -1839,6 +1862,7 @@ function projUIBauen() {
     <input type="file" id="pDatei" accept=".json,application/json" hidden>`;
 
   box.querySelector("#pKunde").onchange = ev => { projUI.kunde = ev.target.value; projUI.offen = null; S.projKunde = projUI.kunde; speichern(); projZeichnen(); projUIBauen(); };
+  box.querySelector("#pLabels").onchange = ev => { S.projLabels = ev.target.checked; speichern(); projZeichnen(); };
   box.querySelector("#pKundeNeu").onclick = () => { projUI.kundeNeu = !projUI.kundeNeu; projUIBauen(); if (projUI.kundeNeu) box.querySelector("#pKundeName").focus(); };
   const ok = box.querySelector("#pKundeOk");
   if (ok) ok.onclick = () => {
