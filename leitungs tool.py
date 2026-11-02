@@ -811,6 +811,17 @@ return PolylineOffset;
   .eobj .eo small { color:var(--mut); }
   .eobj .eo button { border:0; background:none; color:#8a96a5; cursor:pointer; font-size:14px; }
   .eobj > button { justify-self:start; margin-top:4px; }
+  .pkarte.edit .pk-akt { position:sticky; bottom:-10px; background:#fff; padding:8px 0 4px; margin-bottom:-4px; border-top:1px solid var(--line); z-index:2; }
+  .esuche { display:grid; gap:6px; padding-top:6px; border-top:1px dashed var(--line); }
+  .esuche > b { font-size:11.5px; color:var(--mut); font-weight:600; }
+  .es-felder { display:grid; grid-template-columns:2fr 1fr 1fr; gap:4px; }
+  .es-felder input { min-width:0; padding:5px 6px; border:1px solid var(--line); border-radius:3px; font:inherit; }
+  .es-felder input#esQ { grid-column:1 / -1; }
+  #esTreffer { max-height:200px; overflow:auto; font-size:12px; }
+  #esTreffer .eo button { color:var(--acc); font-weight:700; font-size:15px; }
+  .es-kopf { display:flex; justify-content:space-between; align-items:center; color:var(--mut); font-size:11.5px; padding:2px 0; }
+  .es-kopf button { border:1px solid var(--line); background:#fff; border-radius:3px; padding:1px 6px; font:inherit; font-size:11px; cursor:pointer; }
+  .ok { color:#1e7b34; font-size:12px; }
   .pneu { padding:6px 12px; display:grid; gap:4px; justify-items:start; }
   .warn { color:#b45309; }
   .proj-hinweis { margin-top:6px; font-size:12px; }
@@ -1549,7 +1560,10 @@ function auswahlZeichnen() {
     }
   });
 }
-function knopf(k) { return projHinweis(k) + `<div class="hl-knopf"><button data-add="${esc(k)}">${auswahlHat(k) ? "− aus Auswahl entfernen" : "+ zur Auswahl"}</button></div>`; }
+function knopf(k) {
+  const pr = window.projUI && projUI.offen && projUI.entwurf;
+  const zuProj = pr ? (projUI.entwurf.objekte.includes(k) ? ` <span class="ok">&#10003; in „${esc(projUI.entwurf.name)}“</span>` : ` <button data-padd="${esc(k)}">+ zu „${esc(projUI.entwurf.name)}“</button>`) : "";
+  return projHinweis(k) + `<div class="hl-knopf">${zuProj}</div><div class="hl-knopf"><button data-add="${esc(k)}">${auswahlHat(k) ? "− aus Auswahl entfernen" : "+ zur Auswahl"}</button></div>`; }
 
 let treffer = [];
 // Anlage + Nummernbereich (Masten oder Abschnitte)
@@ -1687,6 +1701,11 @@ function sucheBauen() {
 
 // "+ zur Auswahl" in allen Popups
 map.on("popupopen", ev => {
+  ev.popup.getElement().querySelectorAll("[data-padd]").forEach(b => b.onclick = e => {
+    e.preventDefault(); e.stopPropagation();
+    entwurfLesen(); projUI.entwurf.objekte = [...new Set([...projUI.entwurf.objekte, b.dataset.padd])];
+    b.outerHTML = `<span class="ok">&#10003; hinzugefügt</span>`; projUIBauen();
+  });
   ev.popup.getElement().querySelectorAll("[data-add]").forEach(b => b.onclick = e => {
     e.preventDefault(); e.stopPropagation();
     const k = b.dataset.add; auswahlSetzen([k], !auswahlHat(k));
@@ -1713,7 +1732,7 @@ if (pLokal && (!PDATEI || pZeit(pLokal) >= pZeit(PDATEI))) { P = pLokal; projQue
 else { P = PDATEI ? JSON.parse(JSON.stringify(PDATEI)) : { version: 1, geaendert: "", kunden: [], projekte: [] }; projQuelle = PDATEI ? "datei" : "neu"; }
 P.kunden = P.kunden || []; P.projekte = P.projekte || [];
 let pAlternativ = projQuelle === "lokal" ? (PDATEI && pZeit(PDATEI) !== pZeit(pLokal) ? "datei" : null) : (pLokal ? "lokal" : null);
-const projUI = { kunde: S.projKunde ?? "", offen: null, kundeNeu: false, entwurf: null };
+var projUI = { kunde: S.projKunde ?? "", offen: null, kundeNeu: false, entwurf: null, such: { modus: "mast", anl: "", von: "", bis: "", q: "" } };
 const projLyr = L.featureGroup().addTo(map);
 const neueId = () => Math.random().toString(36).slice(2, 10);
 const datumDE = iso => { try { return new Date(iso).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" }); } catch (e) { return iso; } };
@@ -1767,7 +1786,7 @@ function projKarte(p) {
       <span class="pfarbe" style="background:${p.farbe}"></span><b>${esc(p.name)}</b><span class="pstatus s${STATUS_P.indexOf(p.status)}">${esc(p.status)}</span></div>
     <div class="pk-info">${esc(p.art)}${projUI.kunde ? "" : " · " + esc(kundeName(p.kunde))} · ${teile}${fehlt ? ` · <span class="warn">${fehlt} nicht mehr in den Daten</span>` : ""}</div>
     ${p.notiz ? `<div class="pk-notiz">${esc(p.notiz)}</div>` : ""}
-    <div class="pk-akt"><button data-a="zoom">Hinzoomen</button><button data-a="add" class="pAuswahlN">+ Auswahl (${S.auswahl.length})</button><button data-a="laden">In Auswahl laden</button><button data-a="edit">Bearbeiten</button></div>
+    <div class="pk-akt"><button data-a="zoom">Hinzoomen</button>${S.auswahl.length ? `<button data-a="add" class="pAuswahlN">+ Auswahl (${S.auswahl.length})</button>` : ""}<button data-a="laden">In Auswahl laden</button><button data-a="edit">Bearbeiten</button></div>
   </div>`;
 }
 
@@ -1782,7 +1801,15 @@ function projFormular(p) {
     <label>Notiz<textarea id="eNotiz" rows="3" placeholder="z. B. Vertragsnr., Ansprechpartner, Termine">${esc(e.notiz || "")}</textarea></label>
     <div class="eobj"><b>Objekte (${e.objekte.length})</b>
       ${e.objekte.map(k => { const o = INDEX.get(k); return `<div class="eo"><span>${o ? esc(o.titel) + ` <small>${esc(o.info)}</small>` : `<s>${esc(k)}</s> <small>nicht mehr in den Daten</small>`}</span><button data-weg="${esc(k)}" title="entfernen">&times;</button></div>`; }).join("") || `<div class="leer">Noch keine Objekte – über „+ Auswahl“ hinzufügen.</div>`}
-      <button data-a="eAdd" class="pAuswahlN">+ aktuelle Auswahl hinzufügen (${S.auswahl.length})</button></div>
+      ${S.auswahl.length ? `<button data-a="eAdd" class="pAuswahlN">+ aktuelle Auswahl übernehmen (${S.auswahl.length})</button>` : ""}</div>
+    <div class="esuche"><b>Objekte hinzufügen</b>
+      <div class="seg" id="esModus">${[["mast", "Masten"], ["abschnitt", "Abschnitte"], ["uw", "Umspannwerke"]].map(([m, t]) => `<button data-m="${m}" class="${projUI.such.modus === m ? "aktiv" : ""}">${t}</button>`).join("")}</div>
+      <div class="es-felder">${projUI.such.modus === "uw"
+        ? `<input id="esQ" list="uwListe" placeholder="Name oder Kürzel, z. B. Wiesloch" value="${esc(projUI.such.q)}">`
+        : `<input id="esAnl" list="anlListe" placeholder="Anlage, z. B. 0330" value="${esc(projUI.such.anl)}"><input id="esVon" placeholder="von" value="${esc(projUI.such.von)}"><input id="esBis" placeholder="bis" value="${esc(projUI.such.bis)}">`}</div>
+      <div id="esTreffer"></div>
+      <div class="hinweis">Tipp: Solange dieses Projekt offen ist, steht in jedem Popup auf der Karte „+ zu diesem Projekt“.</div>
+    </div>
     <div class="pk-akt"><button data-a="save" class="prim">Speichern</button><button data-a="cancel">Abbrechen</button><button data-a="del" class="gefahr">Löschen</button></div>
   </div>`;
 }
@@ -1790,6 +1817,7 @@ function projFormular(p) {
 function projUIBauen() {
   const box = document.getElementById("sekProjekte");
   if (!box) return;
+  if (projUI.offen) entwurfLesen();
   const kunden = [...P.kunden].sort((a, b) => a.name.localeCompare(b.name));
   const liste = P.projekte.filter(p => !projUI.kunde || p.kunde === projUI.kunde);
   const ungesichert = projQuelle === "lokal" && P.geaendert && P.geaendert !== P.exportiertAm;
@@ -1806,8 +1834,8 @@ function projUIBauen() {
     ${projUI.kundeNeu ? `<div class="pkunde"><input id="pKundeName" list="pFremdNamen" placeholder="Name, z. B. DB Energie GmbH"><button id="pKundeOk" class="prim">Anlegen</button></div>
       <datalist id="pFremdNamen">${fremdNamen.map(n => `<option value="${esc(n)}">`).join("")}</datalist>` : ""}
     <div id="pListe">${liste.length ? liste.map(projKarte).join("") : `<div class="leer">Keine Projekte${projUI.kunde ? " für diesen Netzkunden" : ""}.</div>`}</div>
-    <div class="pneu"><button id="pNeu" class="prim pAuswahlN" ${P.kunden.length ? "" : "disabled"}>+ Neues Projekt aus Auswahl (${S.auswahl.length})</button>
-      <div class="hinweis">${P.kunden.length ? "Objekte vorher über „Suche“ oder per Klick auf der Karte („+ zur Auswahl“) sammeln." : "Zuerst einen Netzkunden anlegen."}</div></div>
+    <div class="pneu"><button id="pNeu" class="prim pAuswahlN" ${P.kunden.length ? "" : "disabled"}>+ Neues Projekt${S.auswahl.length ? ` aus Auswahl (${S.auswahl.length})` : ""}</button>
+      ${P.kunden.length ? "" : `<div class="hinweis">Zuerst einen Netzkunden anlegen.</div>`}</div>
     <input type="file" id="pDatei" accept=".json,application/json" hidden>`;
 
   box.querySelector("#pKunde").onchange = ev => { projUI.kunde = ev.target.value; projUI.offen = null; S.projKunde = projUI.kunde; speichern(); projZeichnen(); projUIBauen(); };
@@ -1872,7 +1900,30 @@ function projUIBauen() {
       if (tun) (b.type === "checkbox" ? b.onchange = tun : b.onclick = tun);
     });
     karte.querySelectorAll("[data-weg]").forEach(b => b.onclick = () => { entwurfLesen(); projUI.entwurf.objekte = projUI.entwurf.objekte.filter(k => k !== b.dataset.weg); projUIBauen(); });
+    if (karte.classList.contains("edit")) esVerbinden(karte);
   });
+}
+// ---- Objektsuche im Projektformular ----
+function esVerbinden(karte) {
+  karte.querySelectorAll("#esModus button").forEach(b => b.onclick = () => { projUI.such.modus = b.dataset.m; projUIBauen(); });
+  const felder = { esQ: "q", esAnl: "anl", esVon: "von", esBis: "bis" };
+  Object.entries(felder).forEach(([id, feld]) => { const el = karte.querySelector("#" + id); if (el) el.oninput = () => { projUI.such[feld] = el.value; esZeigen(); }; });
+  esZeigen();
+  const erstes = karte.querySelector(projUI.such.modus === "uw" ? "#esQ" : "#esAnl");
+  if (erstes && projUI.fokusSuche) { erstes.focus(); projUI.fokusSuche = false; }
+}
+function esZeigen() {
+  const box = document.getElementById("esTreffer");
+  if (!box || !projUI.entwurf) return;
+  const s = projUI.such;
+  const liste = s.modus === "uw" ? (s.q.trim() ? uwSuche(s.q) : []) : (s.anl.trim() ? strukturSuche(s.modus, s.anl, s.von, s.bis) : []);
+  if (!liste.length) { box.innerHTML = (s.modus === "uw" ? s.q : s.anl).trim() ? `<div class="leer">Keine Treffer.</div>` : ""; return; }
+  const drin = new Set(projUI.entwurf.objekte), zeig = liste.slice(0, 60);
+  box.innerHTML = `<div class="es-kopf">${liste.length} Treffer${liste.length > 60 ? " (erste 60)" : ""} <button data-alle>alle hinzufügen</button></div>` +
+    zeig.map(o => `<div class="eo"><span>${esc(o.titel)} <small>${esc(o.info)}</small></span>${drin.has(o.key) ? `<span class="ok">&#10003;</span>` : `<button data-plus="${esc(o.key)}" title="hinzufügen">+</button>`}</div>`).join("");
+  const dazu = keys => { entwurfLesen(); projUI.entwurf.objekte = [...new Set([...projUI.entwurf.objekte, ...keys])]; projUIBauen(); };
+  box.querySelectorAll("[data-plus]").forEach(b => b.onclick = () => dazu([b.dataset.plus]));
+  box.querySelector("[data-alle]").onclick = () => dazu(liste.map(o => o.key));
 }
 function entwurfLesen() {
   const e = projUI.entwurf, $ = id => document.getElementById(id);
@@ -1881,6 +1932,8 @@ function entwurfLesen() {
 }
 // Zähler "aus Auswahl (n)" aktualisieren, ohne ein offenes Formular zu überschreiben
 function projAuswahlZaehler() {
+  if (!window.projUI || !P) return;   // Projekte noch nicht geladen
+  if (!projUI.offen) { projUIBauen(); return; }
   document.querySelectorAll(".pAuswahlN").forEach(b => b.textContent = b.textContent.replace(/\(\d+\)/, `(${S.auswahl.length})`));
 }
 projZeichnen();
