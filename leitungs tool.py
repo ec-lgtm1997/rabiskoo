@@ -653,6 +653,7 @@ return PolylineOffset;
   html, body { margin:0; height:100%; background:#fff; font:13px/1.4 "Segoe UI", Arial, sans-serif; color:var(--fg); }
   #map { position:absolute; inset:0; background:#fff; }
   .leaflet-container { background:#fff !important; font:inherit; }
+  .leaflet-pane > canvas { pointer-events:none !important; }   /* Klicks verteilt das Tool selbst (siehe zeichenflaechen) */
   .leaflet-bar { border:1px solid var(--line) !important; box-shadow:0 1px 4px rgba(0,0,0,.15) !important; border-radius:4px !important; }
   .leaflet-bar a { color:var(--fg) !important; }
 
@@ -824,8 +825,11 @@ return PolylineOffset;
   .ok { color:#1e7b34; font-size:12px; }
   .pneu { padding:6px 12px; display:grid; gap:4px; justify-items:start; }
   .warn { color:#b45309; }
+  .pziel { margin:2px 12px 6px; padding:5px 8px; background:#e8f5ec; border:1px solid #b7dfc2; border-radius:3px; font-size:12px; }
+  .pk-akt button.zielan { border-color:#1e7b34 !important; color:#1e7b34 !important; }
   .pschalter { display:flex; align-items:center; gap:8px; padding:2px 12px 6px; font-size:12px; }
-  .proj-label span { display:inline-block; transform:translate(-50%, -170%); white-space:nowrap; background:#fff; color:#1f2933;
+  .leaflet-marker-icon.proj-label { width:0 !important; height:0 !important; pointer-events:none !important; }   /* nur das Schild selbst ist klickbar */
+  .proj-label span { pointer-events:auto; display:inline-block; transform:translate(-50%, -170%); white-space:nowrap; background:#fff; color:#1f2933;
                      border:1px solid rgba(0,0,0,.25); border-left:5px solid var(--c); padding:2px 7px; font:600 12px "Segoe UI", Arial, sans-serif;
                      box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:pointer; }
   .proj-label span:hover { background:#f3f5f8; }
@@ -1050,6 +1054,33 @@ function versatz() {
   if (typeof ebenenAktualisieren === "function") ebenenAktualisieren();
 }
 map.on("zoomend", versatzPlanen);   // nicht bei jedem Verschieben, nur beim Zoomen
+
+// ---- Klicks durch übereinanderliegende Zeichenflächen (Canvas) durchreichen ----
+// Jede Ebene hat ihre eigene Zeichenfläche; ohne das hier bekäme nur die oberste Fläche Klicks/Maus-Hover.
+function zeichenflaechen() {
+  const liste = new Set([...Object.values(map._paneRenderers || {}), ...Object.values(rend), rendFl, rendPt, rendHalo]);
+  return [...liste].filter(r => r instanceof L.Canvas && r._map && r._container)
+    .map(r => ({ r, z: parseInt(getComputedStyle(r._container.parentNode).zIndex, 10) || 0 }))
+    .sort((a, b) => b.z - a.z).map(x => x.r);
+}
+function trifft(r, e) {
+  const pt = map.mouseEventToLayerPoint(e);
+  for (let o = r._drawLast; o; o = o.prev) if (o.layer.options.interactive && o.layer._containsPoint(pt)) return true;
+  return false;
+}
+const aufKarte = e => !e.target.closest(".leaflet-marker-icon, .leaflet-popup, .leaflet-control, .leaflet-tooltip, #panel");
+["click", "dblclick", "mousedown", "mouseup", "contextmenu"].forEach(typ => map.getContainer().addEventListener(typ, e => {
+  if (!aufKarte(e)) return;
+  const r = zeichenflaechen().find(r => trifft(r, e));
+  if (r) r._onClick(e);
+}));
+map.getContainer().addEventListener("mousemove", e => {
+  if (!aufKarte(e) || map.dragging.moving() || map._animatingZoom) return;
+  const fl = zeichenflaechen(), r = fl.find(r => trifft(r, e));
+  fl.forEach(x => { if (x !== r && x._hoveredLayer) x._handleMouseOut(e); });
+  if (r) r._onMouseMove(e);
+  map.getContainer().style.cursor = r ? "pointer" : "";
+});
 map.on("moveend", () => { if (typeof zusatzLayer !== "undefined") zusatzLayer.forEach(e => e.d && e.d.typ === "punkt" && e.an && e.aktualisieren()); });
 
 // Klick: alle Leitungen an dieser Stelle auflisten
@@ -1548,7 +1579,7 @@ function auswahlZeichnen() {
     const o = INDEX.get(k);
     if (!o) return;
     if (o.art === "uw") {
-      const pop = popupHtml(o.titel + " · " + o.info, o.props) + knopf(k);
+      const pop = () => popupHtml(o.titel + " · " + o.info, o.props) + knopf(k);
       L.geoJSON(o.f, { pane: "auswahlP", style: () => ({ color: hlFarbe, weight: 3, fillColor: hlFarbe, fillOpacity: 0.15 }) }).bindPopup(pop, { maxWidth: 460 }).addTo(auswahlLyr);
       L.marker(o.latlng, { pane: "auswahlP", icon: L.divIcon({ className: "hl-uw", html: `<span style="--c:${hlFarbe}"></span>`, iconSize: [18, 18], iconAnchor: [9, 9] }) })
         .bindTooltip(esc(o.titel), { permanent: true, direction: "right", offset: [10, 0], className: "hl-label" })
@@ -1556,18 +1587,23 @@ function auswahlZeichnen() {
     } else if (o.latlng) {
       L.circleMarker(o.latlng, { pane: "auswahlP", radius: 10, color: hlFarbe, weight: 3.5, fillColor: hlFarbe, fillOpacity: 0.18 })
         .bindTooltip(esc(o.art === "mast" ? o.anl + "/" + o.nr : o.titel), { permanent: true, direction: "right", offset: [9, 0], className: "hl-label" })
-        .bindPopup(popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(k), { maxWidth: 460 })
+        .bindPopup(() => popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(k), { maxWidth: 460 })
         .addTo(auswahlLyr);
     } else {
       L.geoJSON(o.f, { pane: "auswahlL", style: () => ({ color: hlFarbe, weight: staerke + 10, opacity: 0.55, lineCap: "round" }) })
-        .bindPopup(popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(k), { maxWidth: 460 })
+        .bindPopup(() => popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(k), { maxWidth: 460 })
         .addTo(auswahlLyr);
     }
   });
 }
 function knopf(k) {
-  const pr = window.projUI && projUI.offen && projUI.entwurf;
-  const zuProj = pr ? (projUI.entwurf.objekte.includes(k) ? ` <span class="ok">&#10003; in „${esc(projUI.entwurf.name)}“</span>` : ` <button data-padd="${esc(k)}">+ zu „${esc(projUI.entwurf.name)}“</button>`) : "";
+  let zuProj = "";
+  if (window.projUI && projUI.offen && projUI.entwurf) {            // Projekt im Formular offen -> Entwurf ergänzen
+    zuProj = projUI.entwurf.objekte.includes(k) ? `<span class="ok">&#10003; in „${esc(projUI.entwurf.name)}“</span>` : `<button data-padd="${esc(k)}">+ zu „${esc(projUI.entwurf.name)}“</button>`;
+  } else if (window.projUI && projUI.ziel && P) {                    // gespeichertes Zielprojekt -> direkt ergänzen
+    const z = P.projekte.find(p => p.id === projUI.ziel);
+    if (z) zuProj = z.objekte.includes(k) ? `<span class="ok">&#10003; in „${esc(z.name)}“</span> <button data-pweg="${esc(k)}">entfernen</button>` : `<button data-pziel="${esc(k)}">+ zu „${esc(z.name)}“</button>`;
+  }
   return projHinweis(k) + `<div class="hl-knopf">${zuProj}</div><div class="hl-knopf"><button data-add="${esc(k)}">${auswahlHat(k) ? "− aus Auswahl entfernen" : "+ zur Auswahl"}</button></div>`; }
 
 let treffer = [];
@@ -1706,6 +1742,13 @@ function sucheBauen() {
 
 // "+ zur Auswahl" in allen Popups
 map.on("popupopen", ev => {
+  ev.popup.getElement().querySelectorAll("[data-pziel], [data-pweg]").forEach(b => b.onclick = e => {
+    e.preventDefault(); e.stopPropagation();
+    const z = P.projekte.find(p => p.id === projUI.ziel); if (!z) return;
+    if (b.dataset.pziel) { z.objekte = [...new Set([...z.objekte, b.dataset.pziel])]; b.outerHTML = `<span class="ok">&#10003; zu „${esc(z.name)}“ hinzugefügt</span>`; }
+    else { z.objekte = z.objekte.filter(k => k !== b.dataset.pweg); b.parentElement.innerHTML = `<span class="ok">aus „${esc(z.name)}“ entfernt</span>`; }
+    pSpeichern();
+  });
   ev.popup.getElement().querySelectorAll("[data-padd]").forEach(b => b.onclick = e => {
     e.preventDefault(); e.stopPropagation();
     entwurfLesen(); projUI.entwurf.objekte = [...new Set([...projUI.entwurf.objekte, b.dataset.padd])];
@@ -1737,7 +1780,7 @@ if (pLokal && (!PDATEI || pZeit(pLokal) >= pZeit(PDATEI))) { P = pLokal; projQue
 else { P = PDATEI ? JSON.parse(JSON.stringify(PDATEI)) : { version: 1, geaendert: "", kunden: [], projekte: [] }; projQuelle = PDATEI ? "datei" : "neu"; }
 P.kunden = P.kunden || []; P.projekte = P.projekte || [];
 let pAlternativ = projQuelle === "lokal" ? (PDATEI && pZeit(PDATEI) !== pZeit(pLokal) ? "datei" : null) : (pLokal ? "lokal" : null);
-var projUI = { kunde: S.projKunde ?? "", offen: null, kundeNeu: false, entwurf: null, such: { modus: "mast", anl: "", von: "", bis: "", q: "" } };
+var projUI = { kunde: S.projKunde ?? "", ziel: S.projZiel || null, offen: null, kundeNeu: false, entwurf: null, such: { modus: "mast", anl: "", von: "", bis: "", q: "" } };
 const projLyr = L.featureGroup().addTo(map);
 const neueId = () => Math.random().toString(36).slice(2, 10);
 const datumDE = iso => { try { return new Date(iso).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" }); } catch (e) { return iso; } };
@@ -1761,7 +1804,7 @@ function projHinweis(key) {
 function projZeichnen() {
   projLyr.clearLayers();
   P.projekte.filter(p => p.sichtbar !== false && (!projUI.kunde || p.kunde === projUI.kunde)).forEach(p => {
-    const pop = o => popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(o.key);
+    const pop = o => () => popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(o.key);
     p.objekte.forEach(k => {
       const o = INDEX.get(k);
       if (!o) return;
@@ -1808,7 +1851,7 @@ function projKarte(p) {
       <span class="pfarbe" style="background:${p.farbe}"></span><b>${esc(p.name)}</b><span class="pstatus s${STATUS_P.indexOf(p.status)}">${esc(p.status)}</span></div>
     <div class="pk-info">${esc(p.art)}${projUI.kunde ? "" : " · " + esc(kundeName(p.kunde))} · ${teile}${fehlt ? ` · <span class="warn">${fehlt} nicht mehr in den Daten</span>` : ""}</div>
     ${p.notiz ? `<div class="pk-notiz">${esc(p.notiz)}</div>` : ""}
-    <div class="pk-akt"><button data-a="zoom">Hinzoomen</button>${S.auswahl.length ? `<button data-a="add" class="pAuswahlN">+ Auswahl (${S.auswahl.length})</button>` : ""}<button data-a="laden">In Auswahl laden</button><button data-a="edit">Bearbeiten</button></div>
+    <div class="pk-akt"><button data-a="zoom">Hinzoomen</button>${S.auswahl.length ? `<button data-a="add" class="pAuswahlN">+ Auswahl (${S.auswahl.length})</button>` : ""}<button data-a="laden">In Auswahl laden</button><button data-a="edit">Bearbeiten</button><button data-a="ziel" class="${projUI.ziel === p.id ? "zielan" : ""}" title="Klicks auf der Karte ergänzen dieses Projekt">${projUI.ziel === p.id ? "&#9673; Ziel für Kartenklicks" : "Als Ziel für Kartenklicks"}</button></div>
   </div>`;
 }
 
@@ -1853,6 +1896,7 @@ function projUIBauen() {
     <div class="pkunde"><select id="pKunde"><option value="">– alle Netzkunden –</option>
       ${kunden.map(k => `<option value="${k.id}" ${k.id === projUI.kunde ? "selected" : ""}>${esc(k.name)} (${P.projekte.filter(p => p.kunde === k.id).length})</option>`).join("")}</select>
       <button id="pKundeNeu">+ Netzkunde</button></div>
+    ${projUI.ziel && P.projekte.some(p => p.id === projUI.ziel) && !projUI.offen ? `<div class="pziel">Kartenklicks ergänzen: <b>${esc(P.projekte.find(p => p.id === projUI.ziel).name)}</b> – im Popup „+ zu …“ <a href="#" id="pZielAus">beenden</a></div>` : ""}
     <label class="pschalter"><input type="checkbox" id="pLabels" ${S.projLabels !== false ? "checked" : ""}> Projektnamen auf der Karte anzeigen</label>
     ${projUI.kundeNeu ? `<div class="pkunde"><input id="pKundeName" list="pFremdNamen" placeholder="Name, z. B. DB Energie GmbH"><button id="pKundeOk" class="prim">Anlegen</button></div>
       <datalist id="pFremdNamen">${fremdNamen.map(n => `<option value="${esc(n)}">`).join("")}</datalist>` : ""}
@@ -1862,6 +1906,8 @@ function projUIBauen() {
     <input type="file" id="pDatei" accept=".json,application/json" hidden>`;
 
   box.querySelector("#pKunde").onchange = ev => { projUI.kunde = ev.target.value; projUI.offen = null; S.projKunde = projUI.kunde; speichern(); projZeichnen(); projUIBauen(); };
+  const za = box.querySelector("#pZielAus");
+  if (za) za.onclick = ev => { ev.preventDefault(); projUI.ziel = null; S.projZiel = null; speichern(); projUIBauen(); };
   box.querySelector("#pLabels").onchange = ev => { S.projLabels = ev.target.checked; speichern(); projZeichnen(); };
   box.querySelector("#pKundeNeu").onclick = () => { projUI.kundeNeu = !projUI.kundeNeu; projUIBauen(); if (projUI.kundeNeu) box.querySelector("#pKundeName").focus(); };
   const ok = box.querySelector("#pKundeOk");
@@ -1915,11 +1961,12 @@ function projUIBauen() {
         zoom: () => { const g = L.featureGroup(); p.objekte.forEach(k => { const o = INDEX.get(k); if (!o) return; if (o.f && o.art === "abschnitt") g.addLayer(L.geoJSON(o.f)); else if (o.latlng) g.addLayer(L.marker(o.latlng)); }); const bb = g.getBounds(); if (bb.isValid()) map.fitBounds(bb, { padding: [60, 60], maxZoom: 16 }); if (p.sichtbar === false) { p.sichtbar = true; pSpeichern(); } },
         add: () => { p.objekte = [...new Set([...p.objekte, ...S.auswahl])]; pSpeichern(); },
         laden: () => { auswahlSetzen([...S.auswahl], false); auswahlSetzen(p.objekte.filter(k => INDEX.has(k)), true); },
+        ziel: () => { projUI.ziel = projUI.ziel === p.id ? null : p.id; S.projZiel = projUI.ziel; speichern(); projUIBauen(); },
         edit: () => { projUI.offen = p.id; projUI.entwurf = JSON.parse(JSON.stringify(p)); projUIBauen(); },
         eAdd: () => { entwurfLesen(); projUI.entwurf.objekte = [...new Set([...projUI.entwurf.objekte, ...S.auswahl])]; projUIBauen(); },
-        save: () => { entwurfLesen(); Object.assign(p, projUI.entwurf); p.name = p.name.trim() || "Ohne Namen"; projUI.offen = null; projUI.neu = null; pSpeichern(); },
+        save: () => { entwurfLesen(); Object.assign(p, projUI.entwurf); p.name = p.name.trim() || "Ohne Namen"; projUI.offen = null; projUI.neu = null; projUI.ziel = p.id; S.projZiel = p.id; speichern(); pSpeichern(); },
         cancel: () => { if (projUI.neu === p.id) P.projekte = P.projekte.filter(x => x.id !== p.id); projUI.offen = null; projUI.neu = null; projUIBauen(); },
-        del: () => { if (b.dataset.sicher !== "1") { b.dataset.sicher = "1"; b.textContent = "Wirklich löschen?"; return; } P.projekte = P.projekte.filter(x => x.id !== p.id); projUI.offen = null; pSpeichern(); },
+        del: () => { if (b.dataset.sicher !== "1") { b.dataset.sicher = "1"; b.textContent = "Wirklich löschen?"; return; } P.projekte = P.projekte.filter(x => x.id !== p.id); projUI.offen = null; if (projUI.ziel === p.id) { projUI.ziel = null; S.projZiel = null; speichern(); } pSpeichern(); },
       }[a];
       if (tun) (b.type === "checkbox" ? b.onchange = tun : b.onclick = tun);
     });
