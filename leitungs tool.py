@@ -1803,6 +1803,7 @@ function projHinweis(key) {
 
 function projZeichnen() {
   projLyr.clearLayers();
+  projSchilder = [];
   P.projekte.filter(p => p.sichtbar !== false && (!projUI.kunde || p.kunde === projUI.kunde)).forEach(p => {
     const pop = o => () => popupHtml(o.titel + (o.info ? " · " + o.info : ""), o.props) + knopf(o.key);
     p.objekte.forEach(k => {
@@ -1822,6 +1823,7 @@ function projZeichnen() {
     });
     if (S.projLabels !== false) projBeschriften(p);
   });
+  requestAnimationFrame(projSchilderAnordnen);
 }
 // Projektname auf der Karte: Objekte, die weiter als 15 km auseinanderliegen, bekommen je ein eigenes Schild
 function projBeschriften(p) {
@@ -1833,12 +1835,41 @@ function projBeschriften(p) {
     if (g) { g.pts.push(pt); g.mitte = L.latLngBounds(g.pts).getCenter(); } else gruppen.push({ pts: [pt], mitte: pt });
   });
   gruppen.forEach(g => {
-    L.marker(g.mitte, { pane: "projP", icon: L.divIcon({ className: "proj-label", html: `<span style="--c:${p.farbe}">${esc(p.name)}</span>`, iconSize: null }) })
+    const m = L.marker(g.mitte, { pane: "projP", icon: L.divIcon({ className: "proj-label", html: `<span style="--c:${p.farbe}">${esc(p.name)}</span>`, iconSize: null }) })
       .bindTooltip(`${esc(kundeName(p.kunde))} · ${esc(p.art)} · ${esc(p.status)}`, { direction: "bottom", offset: [0, 6] })
       .on("click", () => { const b = L.latLngBounds(g.pts); map.fitBounds(b.pad(0.3), { maxZoom: 16 }); })
       .addTo(projLyr);
+    projSchilder.push({ m, ll: g.mitte, farbe: p.farbe });
   });
 }
+
+// ---- Schilder ohne Überlappung anordnen (nach jedem Zoomen) ----
+var projSchilder = [];
+const projLinien = L.layerGroup().addTo(map);
+function projSchilderAnordnen() {
+  projLinien.clearLayers();
+  const belegt = [];
+  const kollidiert = r => belegt.some(b => r.x < b.x + b.w + 3 && r.x + r.w + 3 > b.x && r.y < b.y + b.h + 3 && r.y + r.h + 3 > b.y);
+  const items = projSchilder.map(x => {
+    const span = x.m.getElement() && x.m.getElement().querySelector("span");
+    return span ? { ...x, span, p: map.latLngToContainerPoint(x.ll), w: span.offsetWidth, h: span.offsetHeight } : null;
+  }).filter(Boolean).sort((a, b) => a.p.y - b.p.y || a.p.x - b.p.x);
+  items.forEach(it => {
+    const { p, w, h } = it, oben = p.y - h - 10, unten = p.y + 10, links = p.x - w / 2;
+    const kand = [[links, oben]];                                    // Standard: mittig über dem Ort
+    for (let n = 1; n <= 6; n++) kand.push([links, oben - n * (h + 4)], [links, unten + (n - 1) * (h + 4)]);
+    kand.push([p.x + 8, p.y - h / 2], [p.x - w - 8, p.y - h / 2]);  // rechts / links daneben
+    for (let n = 1; n <= 3; n++) kand.push([p.x + 8, p.y - h / 2 - n * (h + 4)], [p.x - w - 8, p.y - h / 2 - n * (h + 4)]);
+    const wahl = kand.find(([x, y]) => !kollidiert({ x, y, w, h })) || kand[0];
+    belegt.push({ x: wahl[0], y: wahl[1], w, h });
+    it.span.style.transform = `translate(${Math.round(wahl[0] - p.x)}px, ${Math.round(wahl[1] - p.y)}px)`;
+    if (wahl !== kand[0]) {                                          // verschoben -> Verbindungslinie zum Ort
+      const ziel = L.point(Math.min(Math.max(p.x, wahl[0]), wahl[0] + w), Math.min(Math.max(p.y, wahl[1]), wahl[1] + h));
+      L.polyline([it.ll, map.containerPointToLatLng(ziel)], { pane: "projP", renderer: L.svg({ pane: "projP" }), color: it.farbe, weight: 1.5, dashArray: "3 3", interactive: false }).addTo(projLinien);
+    }
+  });
+}
+map.on("zoomend", () => requestAnimationFrame(projSchilderAnordnen));
 
 function projKarte(p) {
   const da = p.objekte.filter(k => INDEX.has(k)).length, fehlt = p.objekte.length - da;
